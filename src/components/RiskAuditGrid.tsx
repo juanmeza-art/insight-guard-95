@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
 import { motion } from 'framer-motion';
@@ -59,6 +60,16 @@ export function RiskAuditGrid({ data }: Props) {
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">Next Steps</p>
                     <p className="text-xs leading-relaxed">{c.action_required || 'Review campaign metrics and plan next actions.'}</p>
                   </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="font-mono font-medium">{Number(c.progress_pct).toFixed(0)}%</span>
+                  </div>
+                  <Progress value={Math.min(Number(c.progress_pct), 100)} className="h-1.5" />
+                  <p className="text-[10px] text-muted-foreground">{c.num_published} / {c.num_posts} posts published</p>
                 </div>
 
                 {/* 3 Stat Boxes */}
