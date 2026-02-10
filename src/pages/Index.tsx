@@ -6,10 +6,10 @@ import { KPIOverview } from '@/components/KPIOverview';
 import { RiskAuditGrid } from '@/components/RiskAuditGrid';
 import { TrendCharts } from '@/components/TrendCharts';
 import { UrgentAlerts } from '@/components/UrgentAlerts';
-import { ThemeToggle } from '@/components/ThemeToggle';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, BarChart3, Activity, Loader2 } from 'lucide-react';
+import { Shield, BarChart3, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Index = () => {
@@ -35,18 +35,13 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-6 h-14">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Activity className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-tight">Operational Intelligence</h1>
-              <p className="text-[10px] text-muted-foreground">Team KPI Dashboard</p>
-            </div>
+          <div>
+            <h1 className="text-sm font-bold tracking-tight">Execution Dashboard</h1>
+            <p className="text-[10px] text-muted-foreground">Team KPI & Risk Monitoring</p>
           </div>
           <div className="flex items-center gap-3">
             <DashboardFilters
@@ -66,7 +61,6 @@ const Index = () => {
                 ))}
               </SelectContent>
             </Select>
-            <ThemeToggle />
           </div>
         </div>
       </header>
