@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
-import { campaignManagers } from '@/lib/mock-data';
-import { useTeamKPIs } from '@/hooks/useTeamKPIs';
-import { DashboardFilters } from '@/components/DashboardFilters';
+import { useExecutionCampaigns } from '@/hooks/useExecutionCampaigns';
 import { KPIOverview } from '@/components/KPIOverview';
 import { RiskAuditGrid } from '@/components/RiskAuditGrid';
 import { TrendCharts } from '@/components/TrendCharts';
@@ -14,17 +12,19 @@ import { motion } from 'framer-motion';
 
 const Index = () => {
   const [manager, setManager] = useState('all');
-  const [role, setRole] = useState('all');
-  const [currentUser, setCurrentUser] = useState(campaignManagers[0]);
-  const { data: allKPIs = [], isLoading } = useTeamKPIs();
+  const [status, setStatus] = useState('all');
+  const { data: allCampaigns = [], isLoading } = useExecutionCampaigns();
+
+  const managers = useMemo(() => [...new Set(allCampaigns.map(c => c.campaign_manager).filter(Boolean))].sort(), [allCampaigns]);
+  const statuses = useMemo(() => [...new Set(allCampaigns.map(c => c.status))].sort(), [allCampaigns]);
 
   const filtered = useMemo(() => {
-    return allKPIs.filter(kpi => {
-      if (manager !== 'all' && kpi.campaign_manager !== manager) return false;
-      if (role !== 'all' && kpi.role !== role) return false;
+    return allCampaigns.filter(c => {
+      if (manager !== 'all' && c.campaign_manager !== manager) return false;
+      if (status !== 'all' && c.status !== status) return false;
       return true;
     });
-  }, [manager, role, allKPIs]);
+  }, [manager, status, allCampaigns]);
 
   if (isLoading) {
     return (
@@ -36,28 +36,32 @@ const Index = () => {
 
   return (
     <div className="bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-6 h-14">
           <div>
             <h1 className="text-sm font-bold tracking-tight">Execution Dashboard</h1>
-            <p className="text-[10px] text-muted-foreground">Team KPI & Risk Monitoring</p>
+            <p className="text-[10px] text-muted-foreground">Campaign Progress & Budget Monitoring</p>
           </div>
           <div className="flex items-center gap-3">
-            <DashboardFilters
-              selectedManager={manager}
-              onManagerChange={setManager}
-              selectedRole={role}
-              onRoleChange={setRole}
-            />
-            <div className="h-6 w-px bg-border" />
-            <Select value={currentUser} onValueChange={setCurrentUser}>
-              <SelectTrigger className="w-[180px] glass-card text-xs">
-                <SelectValue />
+            <Select value={manager} onValueChange={setManager}>
+              <SelectTrigger className="w-[200px] glass-card text-xs">
+                <SelectValue placeholder="All Managers" />
               </SelectTrigger>
               <SelectContent>
-                {campaignManagers.map(m => (
-                  <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
+                <SelectItem value="all">All Managers</SelectItem>
+                {managers.map(m => (
+                  <SelectItem key={m} value={m!} className="text-xs">{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-[140px] glass-card text-xs">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {statuses.map(s => (
+                  <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -65,18 +69,17 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="flex">
         <main className="flex-1 p-6 space-y-6 overflow-auto">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <KPIOverview data={filtered} />
           </motion.div>
 
-          <Tabs defaultValue="risk" className="space-y-4">
+          <Tabs defaultValue="campaigns" className="space-y-4">
             <TabsList className="bg-muted/50">
-              <TabsTrigger value="risk" className="text-xs gap-1.5">
+              <TabsTrigger value="campaigns" className="text-xs gap-1.5">
                 <Shield className="h-3.5 w-3.5" />
-                Risk Audit
+                Campaign Grid
               </TabsTrigger>
               <TabsTrigger value="trends" className="text-xs gap-1.5">
                 <BarChart3 className="h-3.5 w-3.5" />
@@ -84,7 +87,7 @@ const Index = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="risk">
+            <TabsContent value="campaigns">
               <RiskAuditGrid data={filtered} />
             </TabsContent>
 
@@ -94,9 +97,8 @@ const Index = () => {
           </Tabs>
         </main>
 
-        {/* Alerts Sidebar */}
         <aside className="hidden lg:block w-[320px] border-l border-border/50 p-4">
-          <UrgentAlerts data={allKPIs} currentUser={currentUser} />
+          <UrgentAlerts data={allCampaigns} currentManager={manager !== 'all' ? manager : managers[0] ?? ''} />
         </aside>
       </div>
     </div>
