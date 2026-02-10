@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
 import { motion } from 'framer-motion';
 import { Users, DollarSign, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar, ArrowRight } from 'lucide-react';
@@ -22,7 +21,6 @@ export function RiskAuditGrid({ data }: Props) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {sorted.map((c, i) => {
-        const progress = Number(c.progress_pct);
         const config = riskConfig[c.risk_score ?? 1] || riskConfig[1];
         const Icon = config.icon;
         return (
@@ -65,13 +63,39 @@ export function RiskAuditGrid({ data }: Props) {
                   </div>
                 )}
 
-                {/* Budget & Spent row */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Budget: <span className="font-mono font-medium text-foreground">${(Number(c.total_budget) / 1000).toFixed(1)}K</span></span>
-                  <span>Spent: <span className="font-mono font-medium text-foreground">{Number(c.total_budget) > 0 ? Math.round(Number(c.executed_amount) / Number(c.total_budget) * 100) : 0}%</span></span>
+                {/* 3 Stat Boxes */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <DollarSign className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">${(Number(c.total_budget) / 1000).toFixed(1)}K</p>
+                    <p className="text-[10px] text-muted-foreground">Budget</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <BarChart3 className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">${(Number(c.executed_amount) / 1000).toFixed(1)}K</p>
+                    <p className="text-[10px] text-muted-foreground">Executed</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <Users className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">{c.num_influencers}</p>
+                    <p className="text-[10px] text-muted-foreground">Creators</p>
+                  </div>
                 </div>
 
-                {/* AI Insight button */}
+                {/* Ongoing Start Date + Take Rate */}
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  {c.ongoing_start_date ? (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(c.ongoing_start_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                    </span>
+                  ) : (
+                    <span>—</span>
+                  )}
+                  <span>Take Rate: <span className="font-mono font-medium text-foreground">{Number(c.take_rate_pct)}%</span></span>
+                </div>
+
+                {/* AI Insight Button */}
                 <div className="flex justify-end pt-1">
                   <AIInsightButton campaign={c} />
                 </div>
