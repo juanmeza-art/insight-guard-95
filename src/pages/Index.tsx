@@ -2,17 +2,20 @@ import { useState, useMemo } from 'react';
 import { useExecutionCampaigns } from '@/hooks/useExecutionCampaigns';
 import { KPIOverview } from '@/components/KPIOverview';
 import { RiskAuditGrid } from '@/components/RiskAuditGrid';
+import { CampaignListView } from '@/components/CampaignListView';
 import { TrendCharts } from '@/components/TrendCharts';
 import { UrgentAlerts } from '@/components/UrgentAlerts';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, BarChart3, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Shield, BarChart3, Loader2, LayoutGrid, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Index = () => {
   const [manager, setManager] = useState('all');
   const [status, setStatus] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { data: allCampaigns = [], isLoading } = useExecutionCampaigns();
 
   const managers = useMemo(() => [...new Set(allCampaigns.map(c => c.campaign_manager).filter(Boolean))].sort(), [allCampaigns]);
@@ -76,19 +79,39 @@ const Index = () => {
           </motion.div>
 
           <Tabs defaultValue="campaigns" className="space-y-4">
-            <TabsList className="bg-muted/50">
-              <TabsTrigger value="campaigns" className="text-xs gap-1.5">
-                <Shield className="h-3.5 w-3.5" />
-                Campaign Grid
-              </TabsTrigger>
-              <TabsTrigger value="trends" className="text-xs gap-1.5">
-                <BarChart3 className="h-3.5 w-3.5" />
-                Historical Analysis
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between">
+              <TabsList className="bg-muted/50">
+                <TabsTrigger value="campaigns" className="text-xs gap-1.5">
+                  <Shield className="h-3.5 w-3.5" />
+                  Campaigns
+                </TabsTrigger>
+                <TabsTrigger value="trends" className="text-xs gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  Historical Analysis
+                </TabsTrigger>
+              </TabsList>
+              <div className="flex items-center gap-1 bg-muted/50 rounded-md p-0.5">
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
 
             <TabsContent value="campaigns">
-              <RiskAuditGrid data={filtered} />
+              {viewMode === 'grid' ? <RiskAuditGrid data={filtered} /> : <CampaignListView data={filtered} />}
             </TabsContent>
 
             <TabsContent value="trends">
