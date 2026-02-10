@@ -3,7 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
 import { motion } from 'framer-motion';
-import { Users, DollarSign, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import { Users, DollarSign, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar, ArrowRight } from 'lucide-react';
+import { AIInsightButton } from '@/components/AIInsightButton';
 
 interface Props {
   data: ExecutionCampaign[];
@@ -53,46 +54,26 @@ export function RiskAuditGrid({ data }: Props) {
                   </div>
                 )}
 
-                {/* Progress */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-mono font-medium">{progress.toFixed(0)}%</span>
+                {/* Next Steps */}
+                {c.action_required && (
+                  <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                    <ArrowRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">Next Steps</p>
+                      <p className="text-xs leading-relaxed">{c.action_required}</p>
+                    </div>
                   </div>
-                  <Progress value={Math.min(progress, 100)} className="h-1.5" />
-                  <p className="text-[10px] text-muted-foreground">{c.num_published} / {c.num_posts} posts published</p>
+                )}
+
+                {/* Budget & Spent row */}
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Budget: <span className="font-mono font-medium text-foreground">${(Number(c.total_budget) / 1000).toFixed(1)}K</span></span>
+                  <span>Spent: <span className="font-mono font-medium text-foreground">{Number(c.total_budget) > 0 ? Math.round(Number(c.executed_amount) / Number(c.total_budget) * 100) : 0}%</span></span>
                 </div>
 
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-muted/50">
-                    <DollarSign className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">${(Number(c.total_budget) / 1000).toFixed(1)}K</p>
-                    <p className="text-[10px] text-muted-foreground">Budget</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/50">
-                    <BarChart3 className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">${(Number(c.executed_amount) / 1000).toFixed(1)}K</p>
-                    <p className="text-[10px] text-muted-foreground">Executed</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/50">
-                    <Users className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">{c.num_influencers}</p>
-                    <p className="text-[10px] text-muted-foreground">Creators</p>
-                  </div>
-                </div>
-
-                {/* Footer info */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
-                  {c.ongoing_start_date ? (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(c.ongoing_start_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
-                    </span>
-                  ) : (
-                    <span>—</span>
-                  )}
-                  <span>Take Rate: <span className="font-mono text-foreground">{Number(c.take_rate_pct)}%</span></span>
+                {/* AI Insight button */}
+                <div className="flex justify-end pt-1">
+                  <AIInsightButton campaign={c} />
                 </div>
               </CardContent>
             </Card>
