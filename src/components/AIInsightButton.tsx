@@ -5,10 +5,10 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import type { TeamKPI } from '@/lib/mock-data';
+import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
 
 interface Props {
-  campaign: TeamKPI;
+  campaign: ExecutionCampaign;
 }
 
 export function AIInsightButton({ campaign }: Props) {
@@ -18,7 +18,7 @@ export function AIInsightButton({ campaign }: Props) {
 
   const generate = async () => {
     setOpen(true);
-    if (insight) return; // already generated
+    if (insight) return;
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('campaign-insights', {
@@ -36,7 +36,7 @@ export function AIInsightButton({ campaign }: Props) {
       setInsight(data.insight);
     } catch (e: any) {
       console.error(e);
-      toast.error('Error al generar el análisis de IA');
+      toast.error('Error generating AI analysis');
       setOpen(false);
     } finally {
       setLoading(false);
@@ -60,14 +60,14 @@ export function AIInsightButton({ campaign }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
               <Sparkles className="h-4 w-4 text-primary" />
-              Análisis IA — {campaign.campaign_name}
+              AI Analysis — {campaign.name}
             </DialogTitle>
           </DialogHeader>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Analizando métricas de campaña...</p>
+              <p className="text-sm text-muted-foreground">Analyzing campaign metrics...</p>
             </div>
           ) : insight ? (
             <div className="prose prose-sm dark:prose-invert max-w-none">

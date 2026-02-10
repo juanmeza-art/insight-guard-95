@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       execution_campaigns: {
         Row: {
+          action_required: string
           ai_insight: string
           audience_country: string | null
           building_reports_start_date: string | null
@@ -61,6 +62,7 @@ export type Database = {
           views: number | null
         }
         Insert: {
+          action_required?: string
           ai_insight?: string
           audience_country?: string | null
           building_reports_start_date?: string | null
@@ -106,6 +108,7 @@ export type Database = {
           views?: number | null
         }
         Update: {
+          action_required?: string
           ai_insight?: string
           audience_country?: string | null
           building_reports_start_date?: string | null
