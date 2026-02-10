@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      proposals: {
+        Row: {
+          audience_country: string | null
+          building_proposal_start_date: string | null
+          company: string | null
+          created_at: string
+          creative_builder: string | null
+          creators_expected: number
+          csm: string | null
+          currency: string | null
+          days_building_proposal: number | null
+          deal_created_date: string | null
+          declined_reasons: string | null
+          execution_board_start_date: string | null
+          id: string
+          influencers_budget: number
+          list_builder: string | null
+          monday_item_id: string | null
+          musical_genre: string | null
+          name: string
+          pending_approval_start_date: string | null
+          proposal_adjustments: number
+          proposal_board_start_date: string | null
+          proposal_delivery_date: string | null
+          seller: string | null
+          status: string
+          sub_campaign_budget: number
+          take_rate_pct: number
+          timing_of_delivery: string | null
+          total_budget: number
+        }
+        Insert: {
+          audience_country?: string | null
+          building_proposal_start_date?: string | null
+          company?: string | null
+          created_at?: string
+          creative_builder?: string | null
+          creators_expected?: number
+          csm?: string | null
+          currency?: string | null
+          days_building_proposal?: number | null
+          deal_created_date?: string | null
+          declined_reasons?: string | null
+          execution_board_start_date?: string | null
+          id?: string
+          influencers_budget?: number
+          list_builder?: string | null
+          monday_item_id?: string | null
+          musical_genre?: string | null
+          name: string
+          pending_approval_start_date?: string | null
+          proposal_adjustments?: number
+          proposal_board_start_date?: string | null
+          proposal_delivery_date?: string | null
+          seller?: string | null
+          status?: string
+          sub_campaign_budget?: number
+          take_rate_pct?: number
+          timing_of_delivery?: string | null
+          total_budget?: number
+        }
+        Update: {
+          audience_country?: string | null
+          building_proposal_start_date?: string | null
+          company?: string | null
+          created_at?: string
+          creative_builder?: string | null
+          creators_expected?: number
+          csm?: string | null
+          currency?: string | null
+          days_building_proposal?: number | null
+          deal_created_date?: string | null
+          declined_reasons?: string | null
+          execution_board_start_date?: string | null
+          id?: string
+          influencers_budget?: number
+          list_builder?: string | null
+          monday_item_id?: string | null
+          musical_genre?: string | null
+          name?: string
+          pending_approval_start_date?: string | null
+          proposal_adjustments?: number
+          proposal_board_start_date?: string | null
+          proposal_delivery_date?: string | null
+          seller?: string | null
+          status?: string
+          sub_campaign_budget?: number
+          take_rate_pct?: number
+          timing_of_delivery?: string | null
+          total_budget?: number
+        }
+        Relationships: []
+      }
       team_kpis: {
         Row: {
           action_required: string
