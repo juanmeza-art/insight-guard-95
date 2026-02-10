@@ -1,1 +1,4 @@
 project_id = "czxgecsfsplmzcgpselk"
+
+[functions.campaign-insights]
+verify_jwt = false

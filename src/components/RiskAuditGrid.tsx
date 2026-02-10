@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import type { TeamKPI } from '@/lib/mock-data';
 import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, AlertCircle, Lightbulb, ArrowRight } from 'lucide-react';
+import { AIInsightButton } from '@/components/AIInsightButton';
 
 interface Props {
   data: TeamKPI[];
@@ -57,6 +58,9 @@ export function RiskAuditGrid({ data }: Props) {
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Budget: <span className="font-mono font-medium text-foreground">${(kpi.budget / 1000).toFixed(1)}K</span></span>
                   <span>Spent: <span className="font-mono font-medium text-foreground">{Math.round(kpi.spent / kpi.budget * 100)}%</span></span>
+                </div>
+                <div className="flex justify-end pt-1">
+                  <AIInsightButton campaign={kpi} />
                 </div>
               </CardContent>
             </Card>
