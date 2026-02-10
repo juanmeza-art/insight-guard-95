@@ -1,27 +1,27 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, AlertTriangle } from 'lucide-react';
-import type { TeamKPI } from '@/lib/mock-data';
+import { TrendingUp, Activity, DollarSign, BarChart3, Users, CheckCircle } from 'lucide-react';
+import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
 import { motion } from 'framer-motion';
 
 interface Props {
-  data: TeamKPI[];
+  data: ExecutionCampaign[];
 }
 
 export function KPIOverview({ data }: Props) {
-  const active = data.filter(d => d.status === 'active').length;
-  const totalBudget = data.reduce((s, d) => s + d.budget, 0);
-  const totalSpent = data.reduce((s, d) => s + d.spent, 0);
-  const avgRisk = data.length ? (data.reduce((s, d) => s + d.risk_score, 0) / data.length) : 0;
-  const highRisk = data.filter(d => d.risk_score === 3).length;
-  const totalConversions = data.reduce((s, d) => s + d.conversions, 0);
+  const totalBudget = data.reduce((s, d) => s + Number(d.total_budget), 0);
+  const totalExecuted = data.reduce((s, d) => s + Number(d.executed_amount), 0);
+  const totalInfluencers = data.reduce((s, d) => s + d.num_influencers, 0);
+  const totalPublished = data.reduce((s, d) => s + d.num_published, 0);
+  const totalPosts = data.reduce((s, d) => s + d.num_posts, 0);
+  const avgProgress = data.length ? data.reduce((s, d) => s + Number(d.progress_pct), 0) / data.length : 0;
 
   const cards = [
-    { label: 'Active Campaigns', value: active, icon: Activity, color: 'text-[hsl(var(--chart-blue))]' },
+    { label: 'Campaigns', value: data.length, icon: Activity, color: 'text-[hsl(var(--chart-blue))]' },
     { label: 'Total Budget', value: `$${(totalBudget / 1000).toFixed(0)}K`, icon: DollarSign, color: 'text-[hsl(var(--chart-green))]' },
-    { label: 'Total Spent', value: `$${(totalSpent / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'text-[hsl(var(--chart-orange))]' },
-    { label: 'Avg Risk Score', value: avgRisk.toFixed(1), icon: BarChart3, color: avgRisk > 2 ? 'text-[hsl(var(--risk-high))]' : 'text-[hsl(var(--risk-medium))]' },
-    { label: 'High Risk', value: highRisk, icon: AlertTriangle, color: 'text-[hsl(var(--risk-high))]' },
-    { label: 'Conversions', value: totalConversions.toLocaleString(), icon: TrendingDown, color: 'text-[hsl(var(--chart-purple))]' },
+    { label: 'Executed', value: `$${(totalExecuted / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'text-[hsl(var(--chart-orange))]' },
+    { label: 'Avg Progress', value: `${avgProgress.toFixed(0)}%`, icon: BarChart3, color: avgProgress < 50 ? 'text-[hsl(var(--risk-high))]' : 'text-[hsl(var(--chart-green))]' },
+    { label: 'Influencers', value: totalInfluencers, icon: Users, color: 'text-[hsl(var(--chart-purple))]' },
+    { label: 'Published', value: `${totalPublished}/${totalPosts}`, icon: CheckCircle, color: 'text-[hsl(var(--chart-blue))]' },
   ];
 
   return (
