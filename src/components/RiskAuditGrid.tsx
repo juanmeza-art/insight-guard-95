@@ -53,15 +53,13 @@ export function RiskAuditGrid({ data }: Props) {
                 )}
 
                 {/* Next Steps */}
-                {c.action_required && (
-                  <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                    <ArrowRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">Next Steps</p>
-                      <p className="text-xs leading-relaxed">{c.action_required}</p>
-                    </div>
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                  <ArrowRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">Next Steps</p>
+                    <p className="text-xs leading-relaxed">{c.action_required || 'Review campaign metrics and plan next actions.'}</p>
                   </div>
-                )}
+                </div>
 
                 {/* 3 Stat Boxes */}
                 <div className="grid grid-cols-3 gap-2 text-center">
