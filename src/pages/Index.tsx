@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { mockKPIs, campaignManagers } from '@/lib/mock-data';
+import { campaignManagers } from '@/lib/mock-data';
+import { useTeamKPIs } from '@/hooks/useTeamKPIs';
 import { DashboardFilters } from '@/components/DashboardFilters';
 import { KPIOverview } from '@/components/KPIOverview';
 import { RiskAuditGrid } from '@/components/RiskAuditGrid';
@@ -8,21 +9,30 @@ import { UrgentAlerts } from '@/components/UrgentAlerts';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, BarChart3, Activity } from 'lucide-react';
+import { Shield, BarChart3, Activity, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Index = () => {
   const [manager, setManager] = useState('all');
   const [role, setRole] = useState('all');
   const [currentUser, setCurrentUser] = useState(campaignManagers[0]);
+  const { data: allKPIs = [], isLoading } = useTeamKPIs();
 
   const filtered = useMemo(() => {
-    return mockKPIs.filter(kpi => {
+    return allKPIs.filter(kpi => {
       if (manager !== 'all' && kpi.campaign_manager !== manager) return false;
       if (role !== 'all' && kpi.role !== role) return false;
       return true;
     });
-  }, [manager, role]);
+  }, [manager, role, allKPIs]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -92,7 +102,7 @@ const Index = () => {
 
         {/* Alerts Sidebar */}
         <aside className="hidden lg:block w-[320px] border-l border-border/50 p-4">
-          <UrgentAlerts data={mockKPIs} currentUser={currentUser} />
+          <UrgentAlerts data={allKPIs} currentUser={currentUser} />
         </aside>
       </div>
     </div>
