@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      team_kpis: {
+        Row: {
+          action_required: string
+          ai_insight: string
+          budget: number
+          campaign_manager: string
+          campaign_name: string
+          client_name: string
+          conversions: number
+          created_at: string
+          execution_days: number
+          id: string
+          impressions: number
+          risk_score: number
+          role: string
+          spent: number
+          status: string
+        }
+        Insert: {
+          action_required?: string
+          ai_insight?: string
+          budget?: number
+          campaign_manager: string
+          campaign_name: string
+          client_name: string
+          conversions?: number
+          created_at?: string
+          execution_days?: number
+          id?: string
+          impressions?: number
+          risk_score: number
+          role: string
+          spent?: number
+          status?: string
+        }
+        Update: {
+          action_required?: string
+          ai_insight?: string
+          budget?: number
+          campaign_manager?: string
+          campaign_name?: string
+          client_name?: string
+          conversions?: number
+          created_at?: string
+          execution_days?: number
+          id?: string
+          impressions?: number
+          risk_score?: number
+          role?: string
+          spent?: number
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
