@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       execution_campaigns: {
         Row: {
+          ai_insight: string
           audience_country: string | null
           building_reports_start_date: string | null
           campaign_manager: string | null
@@ -51,6 +52,7 @@ export type Database = {
           num_youtube: number
           ongoing_start_date: string | null
           progress_pct: number
+          risk_score: number
           seller: string | null
           status: string
           sub_campaign_budget: number
@@ -59,6 +61,7 @@ export type Database = {
           views: number | null
         }
         Insert: {
+          ai_insight?: string
           audience_country?: string | null
           building_reports_start_date?: string | null
           campaign_manager?: string | null
@@ -94,6 +97,7 @@ export type Database = {
           num_youtube?: number
           ongoing_start_date?: string | null
           progress_pct?: number
+          risk_score?: number
           seller?: string | null
           status?: string
           sub_campaign_budget?: number
@@ -102,6 +106,7 @@ export type Database = {
           views?: number | null
         }
         Update: {
+          ai_insight?: string
           audience_country?: string | null
           building_reports_start_date?: string | null
           campaign_manager?: string | null
@@ -137,6 +142,7 @@ export type Database = {
           num_youtube?: number
           ongoing_start_date?: string | null
           progress_pct?: number
+          risk_score?: number
           seller?: string | null
           status?: string
           sub_campaign_budget?: number
