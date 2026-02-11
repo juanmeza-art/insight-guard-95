@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from 'recharts';
-import type { TeamKPI } from '@/lib/mock-data';
+import type { TeamKPI } from '@/types/team-kpi';
 
 interface Props {
   data: TeamKPI[];

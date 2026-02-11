@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, Lightbulb } from 'lucide-react';
-import type { TeamKPI } from '@/lib/mock-data';
+import type { TeamKPI } from '@/types/team-kpi';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 

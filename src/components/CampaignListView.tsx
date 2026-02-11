@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import type { TeamKPI } from '@/lib/mock-data';
+import type { TeamKPI } from '@/types/team-kpi';
 import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface Props {

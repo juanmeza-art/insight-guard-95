@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Activity, DollarSign, BarChart3, Eye, AlertTriangle } from 'lucide-react';
-import type { TeamKPI } from '@/lib/mock-data';
+import type { TeamKPI } from '@/types/team-kpi';
 import { motion } from 'framer-motion';
 
 interface Props {
