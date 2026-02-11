@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useExecutionCampaigns } from '@/hooks/useExecutionCampaigns';
+import { useTeamKPIs } from '@/hooks/useTeamKPIs';
 import { KPIOverview } from '@/components/KPIOverview';
 import { RiskAuditGrid } from '@/components/RiskAuditGrid';
 import { CampaignListView } from '@/components/CampaignListView';
@@ -16,7 +16,7 @@ const Index = () => {
   const [manager, setManager] = useState('all');
   const [status, setStatus] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const { data: allCampaigns = [], isLoading } = useExecutionCampaigns();
+  const { data: allCampaigns = [], isLoading } = useTeamKPIs();
 
   const managers = useMemo(() => [...new Set(allCampaigns.map(c => c.campaign_manager).filter(Boolean))].sort(), [allCampaigns]);
   const statuses = useMemo(() => [...new Set(allCampaigns.map(c => c.status))].sort(), [allCampaigns]);

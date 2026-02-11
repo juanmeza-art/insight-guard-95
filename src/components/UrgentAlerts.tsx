@@ -1,19 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Clock, TrendingDown, Lightbulb } from 'lucide-react';
-import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
+import { AlertTriangle, Clock, Lightbulb } from 'lucide-react';
+import type { TeamKPI } from '@/lib/mock-data';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Props {
-  data: ExecutionCampaign[];
+  data: TeamKPI[];
   currentManager: string;
 }
 
 export function UrgentAlerts({ data, currentManager }: Props) {
   const alerts = data.filter(c => {
     if (c.campaign_manager !== currentManager) return false;
-    return (c.risk_score ?? 1) >= 3;
+    return c.risk_score >= 3;
   });
 
   return (
@@ -48,7 +48,7 @@ export function UrgentAlerts({ data, currentManager }: Props) {
                   className="p-3 rounded-lg bg-[hsl(var(--risk-high))]/5 border border-[hsl(var(--risk-high))]/10 space-y-2"
                 >
                   <div className="flex items-start justify-between">
-                    <p className="text-xs font-semibold leading-tight">{c.name}</p>
+                    <p className="text-xs font-semibold leading-tight">{c.campaign_name}</p>
                     <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--risk-high))] shrink-0 ml-2" />
                   </div>
                   {c.ai_insight && (
@@ -59,7 +59,7 @@ export function UrgentAlerts({ data, currentManager }: Props) {
                   )}
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    <span>{c.company}</span>
+                    <span>{c.client_name}</span>
                   </div>
                 </motion.div>
               ))}

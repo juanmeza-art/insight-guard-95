@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
+import type { TeamKPI } from '@/lib/mock-data';
 import { motion } from 'framer-motion';
-import { Users, DollarSign, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar, ArrowRight } from 'lucide-react';
+import { DollarSign, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar, ArrowRight, Eye } from 'lucide-react';
 import { AIInsightButton } from '@/components/AIInsightButton';
 
 interface Props {
-  data: ExecutionCampaign[];
+  data: TeamKPI[];
 }
 
 const riskConfig: Record<number, { border: string; badge: string; label: string; icon: typeof CheckCircle }> = {
@@ -17,13 +17,14 @@ const riskConfig: Record<number, { border: string; badge: string; label: string;
 };
 
 export function RiskAuditGrid({ data }: Props) {
-  const sorted = [...data].sort((a, b) => (b.risk_score ?? 1) - (a.risk_score ?? 1));
+  const sorted = [...data].sort((a, b) => b.risk_score - a.risk_score);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {sorted.map((c, i) => {
-        const config = riskConfig[c.risk_score ?? 1] || riskConfig[1];
+        const config = riskConfig[c.risk_score] || riskConfig[1];
         const Icon = config.icon;
+        const progressPct = c.budget > 0 ? Math.min((c.spent / c.budget) * 100, 100) : 0;
         return (
           <motion.div
             key={c.id}
@@ -35,8 +36,8 @@ export function RiskAuditGrid({ data }: Props) {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-sm font-semibold truncate">{c.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">{c.campaign_manager} · {c.company}</p>
+                    <CardTitle className="text-sm font-semibold truncate">{c.campaign_name}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">{c.campaign_manager} · {c.client_name}</p>
                   </div>
                   <Badge className={`${config.badge} border-0 text-[10px] font-semibold shrink-0 ml-2`}>
                     <Icon className="h-3 w-3 mr-1" />
@@ -62,46 +63,42 @@ export function RiskAuditGrid({ data }: Props) {
                   </div>
                 </div>
 
-                {/* Progress Bar */}
+                {/* Progress Bar (Budget Spent) */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-mono font-medium">{Number(c.progress_pct).toFixed(0)}%</span>
+                    <span className="text-muted-foreground">Budget Spent</span>
+                    <span className="font-mono font-medium">{progressPct.toFixed(0)}%</span>
                   </div>
-                  <Progress value={Math.min(Number(c.progress_pct), 100)} className="h-1.5" />
-                  <p className="text-[10px] text-muted-foreground">{c.num_published} / {c.num_posts} posts published</p>
+                  <Progress value={progressPct} className="h-1.5" />
+                  <p className="text-[10px] text-muted-foreground">${(c.spent / 1000).toFixed(1)}K / ${(c.budget / 1000).toFixed(1)}K</p>
                 </div>
 
                 {/* 3 Stat Boxes */}
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-muted/50">
                     <DollarSign className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">${(Number(c.total_budget) / 1000).toFixed(1)}K</p>
+                    <p className="text-xs font-mono font-medium">${(c.budget / 1000).toFixed(1)}K</p>
                     <p className="text-[10px] text-muted-foreground">Budget</p>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/50">
-                    <BarChart3 className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">${(Number(c.executed_amount) / 1000).toFixed(1)}K</p>
-                    <p className="text-[10px] text-muted-foreground">Executed</p>
+                    <Eye className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">{(c.impressions / 1000).toFixed(0)}K</p>
+                    <p className="text-[10px] text-muted-foreground">Impressions</p>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/50">
-                    <Users className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">{c.num_influencers}</p>
-                    <p className="text-[10px] text-muted-foreground">Creators</p>
+                    <BarChart3 className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">{c.conversions.toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">Conversions</p>
                   </div>
                 </div>
 
-                {/* Ongoing Start Date + Take Rate */}
+                {/* Execution Days + Role */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  {c.ongoing_start_date ? (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(c.ongoing_start_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
-                    </span>
-                  ) : (
-                    <span>—</span>
-                  )}
-                  <span>Take Rate: <span className="font-mono font-medium text-foreground">{Number(c.take_rate_pct)}%</span></span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {c.execution_days} days
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">{c.role}</Badge>
                 </div>
 
                 {/* AI Insight Button */}
