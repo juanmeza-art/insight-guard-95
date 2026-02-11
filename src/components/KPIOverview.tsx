@@ -1,26 +1,26 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, Activity, DollarSign, BarChart3, Users, AlertTriangle } from 'lucide-react';
-import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
+import { TrendingUp, Activity, DollarSign, BarChart3, Eye, AlertTriangle } from 'lucide-react';
+import type { TeamKPI } from '@/lib/mock-data';
 import { motion } from 'framer-motion';
 
 interface Props {
-  data: ExecutionCampaign[];
+  data: TeamKPI[];
 }
 
 export function KPIOverview({ data }: Props) {
-  const totalBudget = data.reduce((s, d) => s + Number(d.total_budget), 0);
-  const totalExecuted = data.reduce((s, d) => s + Number(d.executed_amount), 0);
-  const totalInfluencers = data.reduce((s, d) => s + d.num_influencers, 0);
-  const avgProgress = data.length ? data.reduce((s, d) => s + Number(d.progress_pct), 0) / data.length : 0;
-  const highRisk = data.filter(d => (d.risk_score ?? 1) === 3).length;
+  const totalBudget = data.reduce((s, d) => s + d.budget, 0);
+  const totalSpent = data.reduce((s, d) => s + d.spent, 0);
+  const totalImpressions = data.reduce((s, d) => s + d.impressions, 0);
+  const avgSpentPct = data.length ? (totalSpent / totalBudget) * 100 : 0;
+  const highRisk = data.filter(d => d.risk_score === 3).length;
 
   const cards = [
     { label: 'Campaigns', value: data.length, icon: Activity, color: 'text-[hsl(var(--chart-blue))]' },
     { label: 'Total Budget', value: `$${(totalBudget / 1000).toFixed(0)}K`, icon: DollarSign, color: 'text-[hsl(var(--chart-green))]' },
-    { label: 'Executed', value: `$${(totalExecuted / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'text-[hsl(var(--chart-orange))]' },
-    { label: 'Avg Progress', value: `${avgProgress.toFixed(0)}%`, icon: BarChart3, color: avgProgress < 50 ? 'text-[hsl(var(--risk-high))]' : 'text-[hsl(var(--chart-green))]' },
+    { label: 'Spent', value: `$${(totalSpent / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'text-[hsl(var(--chart-orange))]' },
+    { label: 'Avg Spent', value: `${isFinite(avgSpentPct) ? avgSpentPct.toFixed(0) : 0}%`, icon: BarChart3, color: avgSpentPct > 90 ? 'text-[hsl(var(--risk-high))]' : 'text-[hsl(var(--chart-green))]' },
     { label: 'High Risk', value: highRisk, icon: AlertTriangle, color: 'text-[hsl(var(--risk-high))]' },
-    { label: 'Influencers', value: totalInfluencers, icon: Users, color: 'text-[hsl(var(--chart-purple))]' },
+    { label: 'Impressions', value: `${(totalImpressions / 1000).toFixed(0)}K`, icon: Eye, color: 'text-[hsl(var(--chart-purple))]' },
   ];
 
   return (

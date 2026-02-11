@@ -5,10 +5,10 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import type { ExecutionCampaign } from '@/hooks/useExecutionCampaigns';
+import type { TeamKPI } from '@/lib/mock-data';
 
 interface Props {
-  campaign: ExecutionCampaign;
+  campaign: TeamKPI;
 }
 
 export function AIInsightButton({ campaign }: Props) {
@@ -60,7 +60,7 @@ export function AIInsightButton({ campaign }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
               <Sparkles className="h-4 w-4 text-primary" />
-              AI Analysis — {campaign.name}
+              AI Analysis — {campaign.campaign_name}
             </DialogTitle>
           </DialogHeader>
 
