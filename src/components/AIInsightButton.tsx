@@ -5,7 +5,7 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import type { TeamKPI } from '@/lib/mock-data';
+import type { TeamKPI } from '@/types/team-kpi';
 
 interface Props {
   campaign: TeamKPI;
