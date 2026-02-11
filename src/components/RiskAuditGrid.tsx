@@ -3,7 +3,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { TeamKPI } from '@/types/team-kpi';
 import { motion } from 'framer-motion';
-import { DollarSign, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar, ArrowRight, Eye } from 'lucide-react';
+import { Users, BarChart3, Lightbulb, AlertTriangle, CheckCircle, AlertCircle, Calendar, ArrowRight, Send } from 'lucide-react';
 import { AIInsightButton } from '@/components/AIInsightButton';
 
 interface Props {
@@ -24,7 +24,6 @@ export function RiskAuditGrid({ data }: Props) {
       {sorted.map((c, i) => {
         const config = riskConfig[c.risk_score] || riskConfig[1];
         const Icon = config.icon;
-        const progressPct = c.budget > 0 ? Math.min((c.spent / c.budget) * 100, 100) : 0;
         return (
           <motion.div
             key={c.id}
@@ -36,8 +35,8 @@ export function RiskAuditGrid({ data }: Props) {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-sm font-semibold truncate">{c.campaign_name}</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">{c.campaign_manager} · {c.client_name}</p>
+                    <CardTitle className="text-sm font-semibold truncate">{c.campaign_name ?? 'Untitled'}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">{c.team_name ?? '—'} · {c.sal_status ?? 'N/A'}</p>
                   </div>
                   <Badge className={`${config.badge} border-0 text-[10px] font-semibold shrink-0 ml-2`}>
                     <Icon className="h-3 w-3 mr-1" />
@@ -55,50 +54,56 @@ export function RiskAuditGrid({ data }: Props) {
                 )}
 
                 {/* Next Steps */}
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                  <ArrowRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">Next Steps</p>
-                    <p className="text-xs leading-relaxed">{c.action_required || 'Review campaign metrics and plan next actions.'}</p>
+                {c.action_required && (
+                  <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                    <ArrowRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">Next Steps</p>
+                      <p className="text-xs leading-relaxed">{c.action_required}</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Progress Bar (Budget Spent) */}
+                {/* Progress Bar */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Budget Spent</span>
-                    <span className="font-mono font-medium">{progressPct.toFixed(0)}%</span>
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="font-mono font-medium">{c.progress_pct}%</span>
                   </div>
-                  <Progress value={progressPct} className="h-1.5" />
-                  <p className="text-[10px] text-muted-foreground">${(c.spent / 1000).toFixed(1)}K / ${(c.budget / 1000).toFixed(1)}K</p>
+                  <Progress value={c.progress_pct} className="h-1.5" />
+                  <p className="text-[10px] text-muted-foreground">{c.output_count} / {c.target_value} outputs</p>
                 </div>
 
-                {/* 3 Stat Boxes */}
+                {/* Stat Boxes */}
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-muted/50">
-                    <DollarSign className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">${(c.budget / 1000).toFixed(1)}K</p>
-                    <p className="text-[10px] text-muted-foreground">Budget</p>
+                    <Users className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">{c.num_influencers}</p>
+                    <p className="text-[10px] text-muted-foreground">Influencers</p>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/50">
-                    <Eye className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">{(c.impressions / 1000).toFixed(0)}K</p>
-                    <p className="text-[10px] text-muted-foreground">Impressions</p>
+                    <Send className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">{c.count_sent}</p>
+                    <p className="text-[10px] text-muted-foreground">Sent</p>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/50">
                     <BarChart3 className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs font-mono font-medium">{c.conversions.toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground">Conversions</p>
+                    <p className="text-xs font-mono font-medium">{c.count_completed}</p>
+                    <p className="text-[10px] text-muted-foreground">Completed</p>
                   </div>
                 </div>
 
-                {/* Execution Days + Role */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {c.execution_days} days
-                  </span>
-                  <Badge variant="outline" className="text-[10px]">{c.role}</Badge>
+                {/* Extra metrics row */}
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-xs font-mono font-medium">{c.num_ugc}</p>
+                    <p className="text-[10px] text-muted-foreground">UGC</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <Calendar className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs font-mono font-medium">{c.days_active}</p>
+                    <p className="text-[10px] text-muted-foreground">Days Active</p>
+                  </div>
                 </div>
 
                 {/* AI Insight Button */}

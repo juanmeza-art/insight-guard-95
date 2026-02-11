@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, Activity, DollarSign, BarChart3, Eye, AlertTriangle } from 'lucide-react';
+import { Users, Activity, Send, CheckCircle, AlertTriangle, BarChart3 } from 'lucide-react';
 import type { TeamKPI } from '@/types/team-kpi';
 import { motion } from 'framer-motion';
 
@@ -8,19 +8,20 @@ interface Props {
 }
 
 export function KPIOverview({ data }: Props) {
-  const totalBudget = data.reduce((s, d) => s + d.budget, 0);
-  const totalSpent = data.reduce((s, d) => s + d.spent, 0);
-  const totalImpressions = data.reduce((s, d) => s + d.impressions, 0);
-  const avgSpentPct = data.length ? (totalSpent / totalBudget) * 100 : 0;
-  const highRisk = data.filter(d => d.risk_score === 3).length;
+  const totalInfluencers = data.reduce((s, d) => s + d.num_influencers, 0);
+  const totalUGC = data.reduce((s, d) => s + d.num_ugc, 0);
+  const totalSent = data.reduce((s, d) => s + d.count_sent, 0);
+  const totalCompleted = data.reduce((s, d) => s + d.count_completed, 0);
+  const highRisk = data.filter(d => d.risk_score >= 3).length;
+  const avgProgress = data.length ? Math.round(data.reduce((s, d) => s + d.progress_pct, 0) / data.length) : 0;
 
   const cards = [
     { label: 'Campaigns', value: data.length, icon: Activity, color: 'text-[hsl(var(--chart-blue))]' },
-    { label: 'Total Budget', value: `$${(totalBudget / 1000).toFixed(0)}K`, icon: DollarSign, color: 'text-[hsl(var(--chart-green))]' },
-    { label: 'Spent', value: `$${(totalSpent / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'text-[hsl(var(--chart-orange))]' },
-    { label: 'Avg Spent', value: `${isFinite(avgSpentPct) ? avgSpentPct.toFixed(0) : 0}%`, icon: BarChart3, color: avgSpentPct > 90 ? 'text-[hsl(var(--risk-high))]' : 'text-[hsl(var(--chart-green))]' },
+    { label: 'Influencers', value: totalInfluencers, icon: Users, color: 'text-[hsl(var(--chart-green))]' },
+    { label: 'UGC', value: totalUGC, icon: BarChart3, color: 'text-[hsl(var(--chart-purple))]' },
+    { label: 'Sent', value: totalSent, icon: Send, color: 'text-[hsl(var(--chart-orange))]' },
+    { label: 'Completed', value: totalCompleted, icon: CheckCircle, color: 'text-[hsl(var(--chart-green))]' },
     { label: 'High Risk', value: highRisk, icon: AlertTriangle, color: 'text-[hsl(var(--risk-high))]' },
-    { label: 'Impressions', value: `${(totalImpressions / 1000).toFixed(0)}K`, icon: Eye, color: 'text-[hsl(var(--chart-purple))]' },
   ];
 
   return (
