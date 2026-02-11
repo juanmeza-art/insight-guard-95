@@ -107,6 +107,54 @@ export type Database = {
         }
         Relationships: []
       }
+      team_kpis: {
+        Row: {
+          action_required: string | null
+          ai_insight: string | null
+          campaign_name: string | null
+          created_at: string | null
+          id: number
+          monday_id: string | null
+          num_influencers: number | null
+          output_count: number | null
+          progress_pct: number | null
+          risk_score: number | null
+          sal_status: string | null
+          target_value: number | null
+          team_name: string | null
+        }
+        Insert: {
+          action_required?: string | null
+          ai_insight?: string | null
+          campaign_name?: string | null
+          created_at?: string | null
+          id?: number
+          monday_id?: string | null
+          num_influencers?: number | null
+          output_count?: number | null
+          progress_pct?: number | null
+          risk_score?: number | null
+          sal_status?: string | null
+          target_value?: number | null
+          team_name?: string | null
+        }
+        Update: {
+          action_required?: string | null
+          ai_insight?: string | null
+          campaign_name?: string | null
+          created_at?: string | null
+          id?: number
+          monday_id?: string | null
+          num_influencers?: number | null
+          output_count?: number | null
+          progress_pct?: number | null
+          risk_score?: number | null
+          sal_status?: string | null
+          target_value?: number | null
+          team_name?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
