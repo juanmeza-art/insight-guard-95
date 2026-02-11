@@ -1,0 +1,1 @@
+ALTER TABLE public.team_kpis ADD CONSTRAINT team_kpis_monday_id_unique UNIQUE (monday_id);

@@ -2,3 +2,6 @@ project_id = "czxgecsfsplmzcgpselk"
 
 [functions.campaign-insights]
 verify_jwt = false
+
+[functions.sync-team-kpis]
+verify_jwt = false
