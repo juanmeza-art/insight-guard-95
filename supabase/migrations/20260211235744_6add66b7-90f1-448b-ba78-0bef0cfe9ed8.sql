@@ -1,0 +1,1 @@
+ALTER TABLE public.proposals ADD CONSTRAINT proposals_monday_item_id_unique UNIQUE (monday_item_id);
