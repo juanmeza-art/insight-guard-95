@@ -112,10 +112,14 @@ export type Database = {
           action_required: string | null
           ai_insight: string | null
           campaign_name: string | null
+          count_completed: number | null
+          count_sent: number | null
           created_at: string | null
+          days_active: number | null
           id: number
           monday_id: string | null
           num_influencers: number | null
+          num_ugc: number | null
           output_count: number | null
           progress_pct: number | null
           risk_score: number | null
@@ -127,10 +131,14 @@ export type Database = {
           action_required?: string | null
           ai_insight?: string | null
           campaign_name?: string | null
+          count_completed?: number | null
+          count_sent?: number | null
           created_at?: string | null
+          days_active?: number | null
           id?: number
           monday_id?: string | null
           num_influencers?: number | null
+          num_ugc?: number | null
           output_count?: number | null
           progress_pct?: number | null
           risk_score?: number | null
@@ -142,10 +150,14 @@ export type Database = {
           action_required?: string | null
           ai_insight?: string | null
           campaign_name?: string | null
+          count_completed?: number | null
+          count_sent?: number | null
           created_at?: string | null
+          days_active?: number | null
           id?: number
           monday_id?: string | null
           num_influencers?: number | null
+          num_ugc?: number | null
           output_count?: number | null
           progress_pct?: number | null
           risk_score?: number | null

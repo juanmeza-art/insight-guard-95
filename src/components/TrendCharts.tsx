@@ -10,38 +10,42 @@ interface Props {
 
 export function TrendCharts({ data }: Props) {
   const monthlyData = useMemo(() => {
-    const grouped: Record<string, { count: number; budget: number; spent: number; conversions: number }> = {};
+    const grouped: Record<string, { count: number; influencers: number; sent: number; completed: number; ugc: number }> = {};
     data.forEach(c => {
-      const month = c.created_at.slice(0, 7);
-      if (!grouped[month]) grouped[month] = { count: 0, budget: 0, spent: 0, conversions: 0 };
+      const month = (c.created_at ?? '').slice(0, 7) || 'unknown';
+      if (!grouped[month]) grouped[month] = { count: 0, influencers: 0, sent: 0, completed: 0, ugc: 0 };
       grouped[month].count++;
-      grouped[month].budget += c.budget;
-      grouped[month].spent += c.spent;
-      grouped[month].conversions += c.conversions;
+      grouped[month].influencers += c.num_influencers;
+      grouped[month].sent += c.count_sent;
+      grouped[month].completed += c.count_completed;
+      grouped[month].ugc += c.num_ugc;
     });
     return Object.entries(grouped)
+      .filter(([k]) => k !== 'unknown')
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, d]) => ({
         month: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
         campaigns: d.count,
-        budget: Math.round(d.budget / 1000),
-        spent: Math.round(d.spent / 1000),
-        conversions: d.conversions,
+        influencers: d.influencers,
+        sent: d.sent,
+        completed: d.completed,
+        ugc: d.ugc,
       }));
   }, [data]);
 
   const chartConfig = {
     campaigns: { label: 'Campaigns', color: 'hsl(var(--chart-blue))' },
-    budget: { label: 'Budget ($K)', color: 'hsl(var(--chart-green))' },
-    spent: { label: 'Spent ($K)', color: 'hsl(var(--chart-orange))' },
-    conversions: { label: 'Conversions', color: 'hsl(var(--chart-purple))' },
+    influencers: { label: 'Influencers', color: 'hsl(var(--chart-green))' },
+    sent: { label: 'Sent', color: 'hsl(var(--chart-orange))' },
+    completed: { label: 'Completed', color: 'hsl(var(--chart-purple))' },
+    ugc: { label: 'UGC', color: 'hsl(var(--chart-blue))' },
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <Card className="glass-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Budget vs Spent ($K)</CardTitle>
+          <CardTitle className="text-sm font-semibold">Sent vs Completed</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[280px] w-full">
@@ -50,8 +54,8 @@ export function TrendCharts({ data }: Props) {
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="budget" fill="hsl(var(--chart-green))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="spent" fill="hsl(var(--chart-orange))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="sent" fill="hsl(var(--chart-orange))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="completed" fill="hsl(var(--chart-green))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -59,7 +63,7 @@ export function TrendCharts({ data }: Props) {
 
       <Card className="glass-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Campaigns & Conversions by Month</CardTitle>
+          <CardTitle className="text-sm font-semibold">Influencers & UGC by Month</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[280px] w-full">
@@ -69,8 +73,8 @@ export function TrendCharts({ data }: Props) {
               <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Line yAxisId="left" type="monotone" dataKey="campaigns" stroke="hsl(var(--chart-blue))" strokeWidth={2} dot={{ r: 3 }} />
-              <Line yAxisId="right" type="monotone" dataKey="conversions" stroke="hsl(var(--chart-purple))" strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="left" type="monotone" dataKey="influencers" stroke="hsl(var(--chart-green))" strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="right" type="monotone" dataKey="ugc" stroke="hsl(var(--chart-blue))" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ChartContainer>
         </CardContent>

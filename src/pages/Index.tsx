@@ -13,21 +13,21 @@ import { Shield, BarChart3, Loader2, LayoutGrid, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Index = () => {
-  const [manager, setManager] = useState('all');
-  const [status, setStatus] = useState('all');
+  const [team, setTeam] = useState('all');
+  const [salStatus, setSalStatus] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { data: allCampaigns = [], isLoading } = useTeamKPIs();
 
-  const managers = useMemo(() => [...new Set(allCampaigns.map(c => c.campaign_manager).filter(Boolean))].sort(), [allCampaigns]);
-  const statuses = useMemo(() => [...new Set(allCampaigns.map(c => c.status))].sort(), [allCampaigns]);
+  const teams = useMemo(() => [...new Set(allCampaigns.map(c => c.team_name).filter(Boolean))].sort(), [allCampaigns]);
+  const statuses = useMemo(() => [...new Set(allCampaigns.map(c => c.sal_status).filter(Boolean))].sort(), [allCampaigns]);
 
   const filtered = useMemo(() => {
     return allCampaigns.filter(c => {
-      if (manager !== 'all' && c.campaign_manager !== manager) return false;
-      if (status !== 'all' && c.status !== status) return false;
+      if (team !== 'all' && c.team_name !== team) return false;
+      if (salStatus !== 'all' && c.sal_status !== salStatus) return false;
       return true;
     });
-  }, [manager, status, allCampaigns]);
+  }, [team, salStatus, allCampaigns]);
 
   if (isLoading) {
     return (
@@ -43,28 +43,28 @@ const Index = () => {
         <div className="flex items-center justify-between px-6 h-14">
           <div>
             <h1 className="text-sm font-bold tracking-tight">Execution Dashboard</h1>
-            <p className="text-[10px] text-muted-foreground">Campaign Progress & Budget Monitoring</p>
+            <p className="text-[10px] text-muted-foreground">Campaign Progress & Team Monitoring</p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={manager} onValueChange={setManager}>
+            <Select value={team} onValueChange={setTeam}>
               <SelectTrigger className="w-[200px] glass-card text-xs">
-                <SelectValue placeholder="All Managers" />
+                <SelectValue placeholder="All Teams" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Managers</SelectItem>
-                {managers.map(m => (
-                  <SelectItem key={m} value={m!} className="text-xs">{m}</SelectItem>
+                <SelectItem value="all">All Teams</SelectItem>
+                {teams.map(t => (
+                  <SelectItem key={t} value={t!} className="text-xs">{t}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={salStatus} onValueChange={setSalStatus}>
               <SelectTrigger className="w-[140px] glass-card text-xs">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 {statuses.map(s => (
-                  <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  <SelectItem key={s} value={s!} className="text-xs">{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -121,7 +121,7 @@ const Index = () => {
         </main>
 
         <aside className="hidden lg:block w-[320px] border-l border-border/50 p-4">
-          <UrgentAlerts data={allCampaigns} currentManager={manager !== 'all' ? manager : managers[0] ?? ''} />
+          <UrgentAlerts data={allCampaigns} currentManager={team !== 'all' ? team : teams[0] ?? ''} />
         </aside>
       </div>
     </div>

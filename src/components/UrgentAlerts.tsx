@@ -11,10 +11,7 @@ interface Props {
 }
 
 export function UrgentAlerts({ data, currentManager }: Props) {
-  const alerts = data.filter(c => {
-    if (c.campaign_manager !== currentManager) return false;
-    return c.risk_score >= 3;
-  });
+  const alerts = data.filter(c => c.risk_score >= 3);
 
   return (
     <Card className="glass-card border-[hsl(var(--risk-high))]/20 h-full">
@@ -28,7 +25,6 @@ export function UrgentAlerts({ data, currentManager }: Props) {
             </Badge>
           )}
         </div>
-        <p className="text-[10px] text-muted-foreground">{currentManager}</p>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[400px] px-4 pb-4">
@@ -48,7 +44,7 @@ export function UrgentAlerts({ data, currentManager }: Props) {
                   className="p-3 rounded-lg bg-[hsl(var(--risk-high))]/5 border border-[hsl(var(--risk-high))]/10 space-y-2"
                 >
                   <div className="flex items-start justify-between">
-                    <p className="text-xs font-semibold leading-tight">{c.campaign_name}</p>
+                    <p className="text-xs font-semibold leading-tight">{c.campaign_name ?? 'Untitled'}</p>
                     <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--risk-high))] shrink-0 ml-2" />
                   </div>
                   {c.ai_insight && (
@@ -59,7 +55,7 @@ export function UrgentAlerts({ data, currentManager }: Props) {
                   )}
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    <span>{c.client_name}</span>
+                    <span>{c.team_name ?? '—'} · {c.days_active}d active</span>
                   </div>
                 </motion.div>
               ))}
