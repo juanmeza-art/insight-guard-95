@@ -6,42 +6,43 @@ import { useTeamKPIs } from '@/hooks/useTeamKPIs';
 
 const ClientPerformance = () => {
   const { data: allKPIs = [] } = useTeamKPIs();
-  const teams = [...new Set(allKPIs.map(k => k.team_name).filter(Boolean))];
-  const [selectedTeam, setSelectedTeam] = useState('all');
+  const companies = [...new Set(allKPIs.map(k => k.company).filter(Boolean))].sort();
+  const [selectedCompany, setSelectedCompany] = useState('all');
 
-  const filtered = selectedTeam === 'all' ? allKPIs : allKPIs.filter(k => k.team_name === selectedTeam);
+  const filtered = selectedCompany === 'all' ? allKPIs : allKPIs.filter(k => k.company === selectedCompany);
 
   const totalInfluencers = filtered.reduce((s, k) => s + k.num_influencers, 0);
   const totalSent = filtered.reduce((s, k) => s + k.count_sent, 0);
   const totalCompleted = filtered.reduce((s, k) => s + k.count_completed, 0);
+  const totalExecuted = filtered.reduce((s, k) => s + k.executed_amount, 0);
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Team Performance</h1>
-          <p className="text-sm text-muted-foreground">Live campaign metrics by team</p>
+          <h1 className="text-xl font-bold tracking-tight">Client Performance</h1>
+          <p className="text-sm text-muted-foreground">Historical campaign metrics by company</p>
         </div>
-        <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-          <SelectTrigger className="w-[220px] glass-card text-xs">
-            <SelectValue placeholder="Select team" />
+        <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+          <SelectTrigger className="w-[260px] glass-card text-xs">
+            <SelectValue placeholder="Select company" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Teams</SelectItem>
-            {teams.map(t => (
-              <SelectItem key={t} value={t!} className="text-xs">{t}</SelectItem>
+            <SelectItem value="all">All Companies</SelectItem>
+            {companies.map(c => (
+              <SelectItem key={c} value={c!} className="text-xs">{c}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Campaigns</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{filtered.length}</p>
+            <p className="text-2xl font-bold">{filtered.length.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
@@ -68,13 +69,21 @@ const ClientPerformance = () => {
             <p className="text-2xl font-bold">{totalCompleted.toLocaleString()}</p>
           </CardContent>
         </Card>
+        <Card className="glass-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Executed ($)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">${totalExecuted.toLocaleString()}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {selectedTeam === 'all' ? (
+      {selectedCompany === 'all' ? (
         <Card className="glass-card flex items-center justify-center h-64">
           <div className="text-center text-muted-foreground">
             <Monitor className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm font-medium">Select a team to view detailed performance</p>
+            <p className="text-sm font-medium">Select a company to view detailed performance</p>
           </div>
         </Card>
       ) : (
@@ -86,11 +95,12 @@ const ClientPerformance = () => {
               </CardHeader>
               <CardContent className="space-y-1 text-xs text-muted-foreground">
                 <div className="flex justify-between"><span>Team</span><span className="text-foreground">{kpi.team_name}</span></div>
+                <div className="flex justify-between"><span>Executed</span><span className="text-foreground">${kpi.executed_amount.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span>Take Rate</span><span className="text-foreground">{kpi.executed_take_rate_pct}%</span></div>
                 <div className="flex justify-between"><span>Influencers</span><span className="text-foreground">{kpi.num_influencers}</span></div>
-                <div className="flex justify-between"><span>UGC</span><span className="text-foreground">{kpi.num_ugc}</span></div>
-                <div className="flex justify-between"><span>Sent</span><span className="text-foreground">{kpi.count_sent}</span></div>
                 <div className="flex justify-between"><span>Completed</span><span className="text-foreground">{kpi.count_completed}</span></div>
                 <div className="flex justify-between"><span>Status</span><span className="text-foreground capitalize">{kpi.sal_status}</span></div>
+                {kpi.execution_start && <div className="flex justify-between"><span>Period</span><span className="text-foreground">{kpi.execution_start} → {kpi.execution_end}</span></div>}
               </CardContent>
             </Card>
           ))}
