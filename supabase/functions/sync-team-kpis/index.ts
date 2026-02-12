@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   const expectedSecret = Deno.env.get("WEBHOOK_SECRET");
   if (!expectedSecret) {
     return new Response(
-      JSON.stringify({ error: "WEBHOOK_SECRET not configured" }),
+      JSON.stringify({ error: "Server configuration error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     if (error) {
       console.error("Upsert error:", error);
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: "Database operation failed" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
