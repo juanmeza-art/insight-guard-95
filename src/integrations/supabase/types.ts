@@ -119,12 +119,14 @@ export type Database = {
           csm: string | null
           days_since_pending: number | null
           id: number
+          lb_sla: string | null
           list_builder: string | null
           monday_id: string | null
           pending_approval_start: string | null
           proposal_adjustments: number | null
           risk_score: number | null
           seller_name: string | null
+          seller_sla: string | null
           status: string | null
           take_rate_pct: number | null
         }
@@ -139,12 +141,14 @@ export type Database = {
           csm?: string | null
           days_since_pending?: number | null
           id?: number
+          lb_sla?: string | null
           list_builder?: string | null
           monday_id?: string | null
           pending_approval_start?: string | null
           proposal_adjustments?: number | null
           risk_score?: number | null
           seller_name?: string | null
+          seller_sla?: string | null
           status?: string | null
           take_rate_pct?: number | null
         }
@@ -159,12 +163,14 @@ export type Database = {
           csm?: string | null
           days_since_pending?: number | null
           id?: number
+          lb_sla?: string | null
           list_builder?: string | null
           monday_id?: string | null
           pending_approval_start?: string | null
           proposal_adjustments?: number | null
           risk_score?: number | null
           seller_name?: string | null
+          seller_sla?: string | null
           status?: string | null
           take_rate_pct?: number | null
         }
