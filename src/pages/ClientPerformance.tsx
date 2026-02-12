@@ -151,14 +151,7 @@ const ClientPerformance = () => {
         </Card>
       )}
 
-      {selectedCompany === 'all' ? (
-        <Card className="glass-card flex items-center justify-center h-64">
-          <div className="text-center text-muted-foreground">
-            <Monitor className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm font-medium">Select a company to view detailed performance</p>
-          </div>
-        </Card>
-      ) : (
+      {selectedCompany !== 'all' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map(kpi => {
             const cpm = kpi.num_influencers > 0 ? kpi.target_value / kpi.num_influencers * 1000 : 0;
