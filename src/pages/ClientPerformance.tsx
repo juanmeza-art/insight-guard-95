@@ -18,12 +18,16 @@ const ClientPerformance = () => {
   const totalCompleted = filtered.reduce((s, k) => s + k.count_completed, 0);
   const totalBudget = filtered.reduce((s, k) => s + k.target_value, 0);
 
-  // Historical monthly data for bar chart
+  // Historical monthly data – last 6 months only
   const monthlyData = useMemo(() => {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const cutoff = sixMonthsAgo.toISOString().slice(0, 7); // e.g. "2025-09"
+
     const grouped: Record<string, { budget: number; campaigns: number }> = {};
     filtered.forEach(c => {
-      const month = (c.created_at ?? '').slice(0, 7) || 'unknown';
-      if (month === 'unknown') return;
+      const month = (c.created_at ?? '').slice(0, 7);
+      if (!month || month < cutoff) return;
       if (!grouped[month]) grouped[month] = { budget: 0, campaigns: 0 };
       grouped[month].budget += c.target_value;
       grouped[month].campaigns++;
@@ -105,12 +109,12 @@ const ClientPerformance = () => {
         </Card>
       </div>
 
-      {/* Historical bar chart */}
-      {monthlyData.length > 0 && (
+      {/* Historical bar chart – last 6 months */}
+      {monthlyData.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="glass-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Budget ($) by Month</CardTitle>
+              <CardTitle className="text-sm font-semibold">Budget ($) – Last 6 Months</CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[260px] w-full">
@@ -126,7 +130,7 @@ const ClientPerformance = () => {
           </Card>
           <Card className="glass-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold"># Campaigns by Month</CardTitle>
+              <CardTitle className="text-sm font-semibold"># Campaigns – Last 6 Months</CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[260px] w-full">
@@ -141,6 +145,10 @@ const ClientPerformance = () => {
             </CardContent>
           </Card>
         </div>
+      ) : (
+        <Card className="glass-card flex items-center justify-center h-48">
+          <p className="text-sm text-muted-foreground">No campaigns in the last 6 months for this selection</p>
+        </Card>
       )}
 
       {selectedCompany === 'all' ? (
