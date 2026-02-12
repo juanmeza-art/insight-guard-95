@@ -44,7 +44,6 @@ function parseNum(val: string | undefined): number {
 
 function parseDate(val: string | undefined): string | null {
   if (!val || val === "") return null;
-  // Handle YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.slice(0, 10);
   return null;
 }
@@ -60,7 +59,21 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth check skipped for one-time import
+  // Verify webhook secret for import operations
+  const secret = req.headers.get("x-webhook-secret");
+  const expectedSecret = Deno.env.get("WEBHOOK_SECRET");
+  if (!expectedSecret) {
+    return new Response(
+      JSON.stringify({ error: "WEBHOOK_SECRET not configured" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+  if (secret !== expectedSecret) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
 
   try {
     const supabase = createClient(
@@ -68,11 +81,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get file path from body or default
     const body = await req.json().catch(() => ({}));
-    const filePath = body.file_path || "proposals.csv";
+    const filePath = String(body.file_path || "proposals.csv").slice(0, 200);
 
-    // Download CSV from storage
+    // Validate file path - only allow safe characters
+    if (!/^[a-zA-Z0-9_\-\.\/]+\.csv$/.test(filePath) || filePath.includes("..")) {
+      return new Response(
+        JSON.stringify({ error: "Invalid file path" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { data: fileData, error: dlError } = await supabase.storage
       .from("imports")
       .download(filePath);
@@ -89,6 +108,14 @@ Deno.serve(async (req) => {
     if (lines.length < 2) {
       return new Response(
         JSON.stringify({ error: "CSV has no data rows" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Limit total rows
+    if (lines.length > 10001) {
+      return new Response(
+        JSON.stringify({ error: "CSV too large (max 10000 data rows)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -125,7 +152,7 @@ Deno.serve(async (req) => {
     const iSellerSLA = colIndex("Seller SLA");
     const iLBSLA = colIndex("LB SLA");
 
-    const target = body.target || "proposals"; // "proposals" | "proposals_audit" | "both"
+    const target = body.target || "proposals";
 
     let insertedProposals = 0;
     let insertedAudit = 0;
@@ -233,7 +260,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("Import error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
+      JSON.stringify({ error: "Error processing import" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

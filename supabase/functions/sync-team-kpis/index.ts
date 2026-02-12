@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-webhook-secret",
 };
 
+const MAX_ROWS = 1000;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,44 +31,56 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
+    const rows: unknown[] = Array.isArray(body) ? body : [body];
 
-    // Accept single row or array of rows
-    const rows: any[] = Array.isArray(body) ? body : [body];
+    if (rows.length > MAX_ROWS) {
+      return new Response(
+        JSON.stringify({ error: `Too many rows (max ${MAX_ROWS})` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const safeStr = (v: unknown, max = 500): string | null => {
+      if (v == null) return null;
+      return String(v).slice(0, max);
+    };
+    const safeNum = (v: unknown, def = 0): number => {
+      const n = Number(v);
+      return isNaN(n) || !isFinite(n) ? def : n;
+    };
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Upsert based on monday_id to avoid duplicates
+    const mapped = rows.map((r: any) => ({
+      monday_id: safeStr(r?.monday_id, 100),
+      campaign_name: safeStr(r?.campaign_name),
+      team_name: safeStr(r?.team_name, 200),
+      sal_status: safeStr(r?.sal_status, 50) ?? "Ongoing",
+      output_count: safeNum(r?.output_count),
+      target_value: safeNum(r?.target_value),
+      risk_score: safeNum(r?.risk_score, 1),
+      ai_insight: safeStr(r?.ai_insight, 2000),
+      action_required: safeStr(r?.action_required, 1000),
+      progress_pct: safeNum(r?.progress_pct),
+      num_influencers: safeNum(r?.num_influencers),
+      num_ugc: safeNum(r?.num_ugc),
+      days_active: safeNum(r?.days_active),
+      count_sent: safeNum(r?.count_sent),
+      count_completed: safeNum(r?.count_completed),
+      company: safeStr(r?.company, 200),
+      executed_amount: safeNum(r?.executed_amount),
+      executed_take_rate_pct: safeNum(r?.executed_take_rate_pct),
+      execution_start: safeStr(r?.execution_start, 10),
+      execution_end: safeStr(r?.execution_end, 10),
+      currency: safeStr(r?.currency, 10) ?? "USD",
+    }));
+
     const { data, error } = await supabase
       .from("team_kpis")
-      .upsert(
-        rows.map((r) => ({
-          monday_id: r.monday_id,
-          campaign_name: r.campaign_name,
-          team_name: r.team_name,
-          sal_status: r.sal_status ?? "Ongoing",
-          output_count: r.output_count ?? 0,
-          target_value: r.target_value ?? 0,
-          risk_score: r.risk_score ?? 1,
-          ai_insight: r.ai_insight,
-          action_required: r.action_required,
-          progress_pct: r.progress_pct ?? 0,
-          num_influencers: r.num_influencers ?? 0,
-          num_ugc: r.num_ugc ?? 0,
-          days_active: r.days_active ?? 0,
-          count_sent: r.count_sent ?? 0,
-          count_completed: r.count_completed ?? 0,
-          company: r.company,
-          executed_amount: r.executed_amount ?? 0,
-          executed_take_rate_pct: r.executed_take_rate_pct ?? 0,
-          execution_start: r.execution_start,
-          execution_end: r.execution_end,
-          currency: r.currency ?? "USD",
-        })),
-        { onConflict: "monday_id" }
-      )
+      .upsert(mapped, { onConflict: "monday_id" })
       .select();
 
     if (error) {
@@ -84,7 +98,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("Sync error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
+      JSON.stringify({ error: "Error processing request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
