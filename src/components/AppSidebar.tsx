@@ -1,4 +1,4 @@
-import { Activity, FileText, Monitor } from 'lucide-react';
+import { Activity, FileText, Monitor, Users } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import {
@@ -19,6 +19,7 @@ const navItems = [
   { title: 'Execution', url: '/', icon: Activity, description: 'Campaign KPIs & Risk' },
   { title: 'Proposals', url: '/proposals', icon: FileText, description: 'Sales pipeline' },
   { title: 'Client Performance', url: '/client-performance', icon: Monitor, description: 'Live dashboards' },
+  { title: 'Role Performance', url: '/role-performance', icon: Users, description: 'KPIs by role' },
 ];
 
 export function AppSidebar() {

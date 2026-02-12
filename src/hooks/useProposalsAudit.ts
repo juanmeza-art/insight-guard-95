@@ -21,6 +21,8 @@ export type ProposalAudit = {
   ai_insight: string | null;
   action_required: string | null;
   created_at: string | null;
+  seller_sla: string | null;
+  lb_sla: string | null;
 };
 
 export function useProposalsAudit() {
@@ -72,6 +74,8 @@ export function useProposalsAudit() {
         ai_insight: row.ai_insight,
         action_required: row.action_required,
         created_at: row.created_at,
+        seller_sla: row.seller_sla,
+        lb_sla: row.lb_sla,
       }));
     },
   });

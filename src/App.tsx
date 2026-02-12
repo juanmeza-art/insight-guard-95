@@ -7,6 +7,7 @@ import { AppLayout } from "./components/AppLayout";
 import Index from "./pages/Index";
 import Proposals from "./pages/Proposals";
 import ClientPerformance from "./pages/ClientPerformance";
+import RolePerformance from "./pages/RolePerformance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/proposals" element={<Proposals />} />
             <Route path="/client-performance" element={<ClientPerformance />} />
+            <Route path="/role-performance" element={<RolePerformance />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
