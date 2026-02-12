@@ -55,6 +55,12 @@ Deno.serve(async (req) => {
           risk_score: r.risk_score ?? 1,
           ai_insight: r.ai_insight,
           action_required: r.action_required,
+          seller_sla: r.seller_sla ?? "NO",
+          lb_sla: r.lb_sla ?? "NO",
+          currency: r.currency ?? "USD",
+          proposal_delivery_date: r.proposal_delivery_date,
+          audience_country: r.audience_country,
+          musical_genre: r.musical_genre,
         })),
         { onConflict: "monday_id" }
       )

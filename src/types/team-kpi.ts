@@ -16,4 +16,10 @@ export type TeamKPI = {
   count_completed: number;
   monday_id: string | null;
   created_at: string | null;
+  company: string | null;
+  executed_amount: number;
+  executed_take_rate_pct: number;
+  execution_start: string | null;
+  execution_end: string | null;
+  currency: string | null;
 };
