@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.sync-proposals-audit]
 verify_jwt = false
+
+[functions.bulk-import-csv]
+verify_jwt = false
