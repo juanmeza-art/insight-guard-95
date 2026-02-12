@@ -1,7 +1,9 @@
 import { Monitor } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState } from 'react';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { useState, useMemo } from 'react';
 import { useTeamKPIs } from '@/hooks/useTeamKPIs';
 
 const ClientPerformance = () => {
@@ -14,7 +16,31 @@ const ClientPerformance = () => {
   const totalInfluencers = filtered.reduce((s, k) => s + k.num_influencers, 0);
   const totalSent = filtered.reduce((s, k) => s + k.count_sent, 0);
   const totalCompleted = filtered.reduce((s, k) => s + k.count_completed, 0);
-  const totalExecuted = filtered.reduce((s, k) => s + k.executed_amount, 0);
+  const totalBudget = filtered.reduce((s, k) => s + k.target_value, 0);
+
+  // Historical monthly data for bar chart
+  const monthlyData = useMemo(() => {
+    const grouped: Record<string, { budget: number; campaigns: number }> = {};
+    filtered.forEach(c => {
+      const month = (c.created_at ?? '').slice(0, 7) || 'unknown';
+      if (month === 'unknown') return;
+      if (!grouped[month]) grouped[month] = { budget: 0, campaigns: 0 };
+      grouped[month].budget += c.target_value;
+      grouped[month].campaigns++;
+    });
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, d]) => ({
+        month: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+        budget: d.budget,
+        campaigns: d.campaigns,
+      }));
+  }, [filtered]);
+
+  const chartConfig = {
+    budget: { label: 'Budget ($)', color: 'hsl(var(--chart-blue))' },
+    campaigns: { label: 'Campaigns', color: 'hsl(var(--chart-orange))' },
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -71,13 +97,51 @@ const ClientPerformance = () => {
         </Card>
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Executed ($)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Budget ($)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${totalExecuted.toLocaleString()}</p>
+            <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Historical bar chart */}
+      {monthlyData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">Budget ($) by Month</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[260px] w-full">
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="budget" fill="hsl(var(--chart-blue))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold"># Campaigns by Month</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[260px] w-full">
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="campaigns" fill="hsl(var(--chart-orange))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {selectedCompany === 'all' ? (
         <Card className="glass-card flex items-center justify-center h-64">
@@ -88,22 +152,28 @@ const ClientPerformance = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map(kpi => (
-            <Card key={kpi.id} className="glass-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">{kpi.campaign_name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1 text-xs text-muted-foreground">
-                <div className="flex justify-between"><span>Team</span><span className="text-foreground">{kpi.team_name}</span></div>
-                <div className="flex justify-between"><span>Executed</span><span className="text-foreground">${kpi.executed_amount.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span>Take Rate</span><span className="text-foreground">{kpi.executed_take_rate_pct}%</span></div>
-                <div className="flex justify-between"><span>Influencers</span><span className="text-foreground">{kpi.num_influencers}</span></div>
-                <div className="flex justify-between"><span>Completed</span><span className="text-foreground">{kpi.count_completed}</span></div>
-                <div className="flex justify-between"><span>Status</span><span className="text-foreground capitalize">{kpi.sal_status}</span></div>
-                {kpi.execution_start && <div className="flex justify-between"><span>Period</span><span className="text-foreground">{kpi.execution_start} → {kpi.execution_end}</span></div>}
-              </CardContent>
-            </Card>
-          ))}
+          {filtered.map(kpi => {
+            const cpm = kpi.num_influencers > 0 ? kpi.target_value / kpi.num_influencers * 1000 : 0;
+            const cpe = kpi.count_completed > 0 ? kpi.target_value / kpi.count_completed : 0;
+            return (
+              <Card key={kpi.id} className="glass-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{kpi.campaign_name}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 text-xs text-muted-foreground">
+                  <div className="flex justify-between"><span>Team</span><span className="text-foreground">{kpi.team_name}</span></div>
+                  <div className="flex justify-between"><span>Total Budget</span><span className="text-foreground">${kpi.target_value.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Take Rate</span><span className="text-foreground">{kpi.executed_take_rate_pct}%</span></div>
+                  <div className="flex justify-between"><span>CPM</span><span className="text-foreground">${cpm.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
+                  <div className="flex justify-between"><span>CPE</span><span className="text-foreground">${cpe.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
+                  <div className="flex justify-between"><span>Influencers</span><span className="text-foreground">{kpi.num_influencers}</span></div>
+                  <div className="flex justify-between"><span>Completed</span><span className="text-foreground">{kpi.count_completed}</span></div>
+                  <div className="flex justify-between"><span>Status</span><span className="text-foreground capitalize">{kpi.sal_status}</span></div>
+                  {kpi.execution_start && <div className="flex justify-between"><span>Period</span><span className="text-foreground">{kpi.execution_start} → {kpi.execution_end}</span></div>}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
