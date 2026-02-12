@@ -107,6 +107,69 @@ export type Database = {
         }
         Relationships: []
       }
+      proposals_audit: {
+        Row: {
+          action_required: string | null
+          ai_insight: string | null
+          budget: number | null
+          building_proposal_start: string | null
+          campaign_name: string | null
+          company: string | null
+          created_at: string | null
+          csm: string | null
+          days_since_pending: number | null
+          id: number
+          list_builder: string | null
+          monday_id: string | null
+          pending_approval_start: string | null
+          proposal_adjustments: number | null
+          risk_score: number | null
+          seller_name: string | null
+          status: string | null
+          take_rate_pct: number | null
+        }
+        Insert: {
+          action_required?: string | null
+          ai_insight?: string | null
+          budget?: number | null
+          building_proposal_start?: string | null
+          campaign_name?: string | null
+          company?: string | null
+          created_at?: string | null
+          csm?: string | null
+          days_since_pending?: number | null
+          id?: number
+          list_builder?: string | null
+          monday_id?: string | null
+          pending_approval_start?: string | null
+          proposal_adjustments?: number | null
+          risk_score?: number | null
+          seller_name?: string | null
+          status?: string | null
+          take_rate_pct?: number | null
+        }
+        Update: {
+          action_required?: string | null
+          ai_insight?: string | null
+          budget?: number | null
+          building_proposal_start?: string | null
+          campaign_name?: string | null
+          company?: string | null
+          created_at?: string | null
+          csm?: string | null
+          days_since_pending?: number | null
+          id?: number
+          list_builder?: string | null
+          monday_id?: string | null
+          pending_approval_start?: string | null
+          proposal_adjustments?: number | null
+          risk_score?: number | null
+          seller_name?: string | null
+          status?: string | null
+          take_rate_pct?: number | null
+        }
+        Relationships: []
+      }
       team_kpis: {
         Row: {
           action_required: string | null
