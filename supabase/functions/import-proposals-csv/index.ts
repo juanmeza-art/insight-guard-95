@@ -122,66 +122,112 @@ Deno.serve(async (req) => {
     const iDaysBuilding = colIndex("Days Building Proposal");
     const iTimingDelivery = colIndex("Timing of Delivery");
     const iItemId = colIndex("Item ID");
+    const iSellerSLA = colIndex("Seller SLA");
+    const iLBSLA = colIndex("LB SLA");
 
-    let inserted = 0;
+    const target = body.target || "proposals"; // "proposals" | "proposals_audit" | "both"
+
+    let insertedProposals = 0;
+    let insertedAudit = 0;
     let errors = 0;
     const BATCH_SIZE = 200;
 
     for (let i = 1; i < lines.length; i += BATCH_SIZE) {
-      const batch: any[] = [];
+      const proposalsBatch: any[] = [];
+      const auditBatch: any[] = [];
+
       for (let j = i; j < Math.min(i + BATCH_SIZE, lines.length); j++) {
         const cols = parseCSVLine(lines[j]);
         const name = iName >= 0 ? cols[iName] : "";
         if (!name) continue;
 
         const mondayId = iItemId >= 0 ? cols[iItemId] : "";
+        const mid = mondayId || `csv-${j}-${Date.now()}`;
 
-        batch.push({
-          monday_item_id: mondayId || `csv-${j}-${Date.now()}`,
-          name,
-          status: (iStatus >= 0 ? cols[iStatus] : "") || "To Do",
-          list_builder: iListBuilder >= 0 ? cols[iListBuilder] || null : null,
-          creative_builder: iCreativeBuilder >= 0 ? cols[iCreativeBuilder] || null : null,
-          csm: iCSM >= 0 ? cols[iCSM] || null : null,
-          seller: iSeller >= 0 ? cols[iSeller] || null : null,
-          company: iCompany >= 0 ? cols[iCompany] || null : null,
-          total_budget: iTotalBudget >= 0 ? parseNum(cols[iTotalBudget]) : 0,
-          influencers_budget: iInfluencersBudget >= 0 ? parseNum(cols[iInfluencersBudget]) : 0,
-          sub_campaign_budget: iSubCampaignBudget >= 0 ? parseNum(cols[iSubCampaignBudget]) : 0,
-          take_rate_pct: iTakeRate >= 0 ? parseNum(cols[iTakeRate]) : 0,
-          creators_expected: iCreatorsExpected >= 0 ? parseNum(cols[iCreatorsExpected]) : 0,
-          audience_country: iAudienceCountry >= 0 ? cols[iAudienceCountry] || null : null,
-          musical_genre: iMusicalGenre >= 0 ? cols[iMusicalGenre] || null : null,
-          currency: (iCurrency >= 0 ? cols[iCurrency] : "") || "USD",
-          deal_created_date: iDealCreated >= 0 ? parseDate(cols[iDealCreated]) : null,
-          proposal_board_start_date: iProposalBoard >= 0 ? parseDate(cols[iProposalBoard]) : null,
-          proposal_delivery_date: iDeliveryDate >= 0 ? parseDate(cols[iDeliveryDate]) : null,
-          building_proposal_start_date: iBuildingStart >= 0 ? parseDate(cols[iBuildingStart]) : null,
-          pending_approval_start_date: iPendingStart >= 0 ? parseDate(cols[iPendingStart]) : null,
-          execution_board_start_date: iExecutionBoard >= 0 ? parseDate(cols[iExecutionBoard]) : null,
-          days_building_proposal: iDaysBuilding >= 0 ? parseIntVal(cols[iDaysBuilding]) : null,
-          timing_of_delivery: iTimingDelivery >= 0 ? cols[iTimingDelivery] || null : null,
-          proposal_adjustments: iAdjustments >= 0 ? parseNum(cols[iAdjustments]) : 0,
-          declined_reasons: iDeclinedReasons >= 0 ? cols[iDeclinedReasons] || null : null,
-        });
+        if (target === "proposals" || target === "both") {
+          proposalsBatch.push({
+            monday_item_id: mid,
+            name,
+            status: (iStatus >= 0 ? cols[iStatus] : "") || "To Do",
+            list_builder: iListBuilder >= 0 ? cols[iListBuilder] || null : null,
+            creative_builder: iCreativeBuilder >= 0 ? cols[iCreativeBuilder] || null : null,
+            csm: iCSM >= 0 ? cols[iCSM] || null : null,
+            seller: iSeller >= 0 ? cols[iSeller] || null : null,
+            company: iCompany >= 0 ? cols[iCompany] || null : null,
+            total_budget: iTotalBudget >= 0 ? parseNum(cols[iTotalBudget]) : 0,
+            influencers_budget: iInfluencersBudget >= 0 ? parseNum(cols[iInfluencersBudget]) : 0,
+            sub_campaign_budget: iSubCampaignBudget >= 0 ? parseNum(cols[iSubCampaignBudget]) : 0,
+            take_rate_pct: iTakeRate >= 0 ? parseNum(cols[iTakeRate]) : 0,
+            creators_expected: iCreatorsExpected >= 0 ? parseNum(cols[iCreatorsExpected]) : 0,
+            audience_country: iAudienceCountry >= 0 ? cols[iAudienceCountry] || null : null,
+            musical_genre: iMusicalGenre >= 0 ? cols[iMusicalGenre] || null : null,
+            currency: (iCurrency >= 0 ? cols[iCurrency] : "") || "USD",
+            deal_created_date: iDealCreated >= 0 ? parseDate(cols[iDealCreated]) : null,
+            proposal_board_start_date: iProposalBoard >= 0 ? parseDate(cols[iProposalBoard]) : null,
+            proposal_delivery_date: iDeliveryDate >= 0 ? parseDate(cols[iDeliveryDate]) : null,
+            building_proposal_start_date: iBuildingStart >= 0 ? parseDate(cols[iBuildingStart]) : null,
+            pending_approval_start_date: iPendingStart >= 0 ? parseDate(cols[iPendingStart]) : null,
+            execution_board_start_date: iExecutionBoard >= 0 ? parseDate(cols[iExecutionBoard]) : null,
+            days_building_proposal: iDaysBuilding >= 0 ? parseIntVal(cols[iDaysBuilding]) : null,
+            timing_of_delivery: iTimingDelivery >= 0 ? cols[iTimingDelivery] || null : null,
+            proposal_adjustments: iAdjustments >= 0 ? parseNum(cols[iAdjustments]) : 0,
+            declined_reasons: iDeclinedReasons >= 0 ? cols[iDeclinedReasons] || null : null,
+          });
+        }
+
+        if (target === "proposals_audit" || target === "both") {
+          auditBatch.push({
+            monday_id: mid,
+            campaign_name: name,
+            status: (iStatus >= 0 ? cols[iStatus] : "") || "To Do",
+            company: iCompany >= 0 ? cols[iCompany] || null : null,
+            seller_name: iSeller >= 0 ? cols[iSeller] || null : null,
+            list_builder: iListBuilder >= 0 ? cols[iListBuilder] || null : null,
+            csm: iCSM >= 0 ? cols[iCSM] || null : null,
+            budget: iTotalBudget >= 0 ? parseNum(cols[iTotalBudget]) : 0,
+            take_rate_pct: iTakeRate >= 0 ? parseNum(cols[iTakeRate]) : 0,
+            currency: (iCurrency >= 0 ? cols[iCurrency] : "") || "USD",
+            audience_country: iAudienceCountry >= 0 ? cols[iAudienceCountry] || null : null,
+            musical_genre: iMusicalGenre >= 0 ? cols[iMusicalGenre] || null : null,
+            proposal_adjustments: iAdjustments >= 0 ? parseNum(cols[iAdjustments]) : 0,
+            building_proposal_start: iBuildingStart >= 0 ? parseDate(cols[iBuildingStart]) : null,
+            pending_approval_start: iPendingStart >= 0 ? parseDate(cols[iPendingStart]) : null,
+            proposal_delivery_date: iDeliveryDate >= 0 ? parseDate(cols[iDeliveryDate]) : null,
+            days_since_pending: iDaysBuilding >= 0 ? parseIntVal(cols[iDaysBuilding]) ?? 0 : 0,
+            seller_sla: iSellerSLA >= 0 ? cols[iSellerSLA] || "NO" : "NO",
+            lb_sla: iLBSLA >= 0 ? cols[iLBSLA] || "NO" : "NO",
+            risk_score: 1,
+          });
+        }
       }
 
-      if (batch.length === 0) continue;
+      if (proposalsBatch.length > 0) {
+        const { error } = await supabase
+          .from("proposals")
+          .upsert(proposalsBatch, { onConflict: "monday_item_id" });
+        if (error) {
+          console.error(`Proposals batch error at row ${i}:`, error.message);
+          errors += proposalsBatch.length;
+        } else {
+          insertedProposals += proposalsBatch.length;
+        }
+      }
 
-      const { error } = await supabase
-        .from("proposals")
-        .upsert(batch, { onConflict: "monday_item_id" });
-
-      if (error) {
-        console.error(`Batch error at row ${i}:`, error.message);
-        errors += batch.length;
-      } else {
-        inserted += batch.length;
+      if (auditBatch.length > 0) {
+        const { error } = await supabase
+          .from("proposals_audit")
+          .upsert(auditBatch, { onConflict: "monday_id" });
+        if (error) {
+          console.error(`Audit batch error at row ${i}:`, error.message);
+          errors += auditBatch.length;
+        } else {
+          insertedAudit += auditBatch.length;
+        }
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, inserted, errors, totalRows: lines.length - 1 }),
+      JSON.stringify({ success: true, insertedProposals, insertedAudit, errors, totalRows: lines.length - 1 }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
