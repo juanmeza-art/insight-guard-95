@@ -9,7 +9,7 @@ import {
   Users, Zap, BarChart3, CalendarDays
 } from 'lucide-react';
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Line, ComposedChart } from 'recharts';
 
 type Period = '7d' | '30d' | '90d' | 'ytd' | 'all';
 
@@ -141,6 +141,18 @@ export default function RolePerformance() {
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 8);
   }, [filtered]);
 
+  const cmByPerson = useMemo(() => {
+    const map: Record<string, { name: string; campaigns: number; influencers: number; executed: number }> = {};
+    filteredKPIs.forEach(k => {
+      const name = k.team_name || 'Sin asignar';
+      if (!map[name]) map[name] = { name, campaigns: 0, influencers: 0, executed: 0 };
+      map[name].campaigns++;
+      map[name].influencers += k.num_influencers;
+      map[name].executed += k.output_count;
+    });
+    return Object.values(map).sort((a, b) => b.campaigns - a.campaigns).slice(0, 10);
+  }, [filteredKPIs]);
+
   if (loadingP || loadingK) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -250,6 +262,25 @@ export default function RolePerformance() {
           <KPICard label="# Influencers" value={cmInfluencers} icon={Users} color="text-[hsl(var(--chart-green))]" delay={0.1} />
           <KPICard label="Healthy Timelines" value={pct(cmHealthy, cmCampaigns)} icon={CalendarDays} color="text-[hsl(var(--chart-green))]" delay={0.15} subtitle={`${cmHealthy} of ${cmCampaigns}`} />
         </div>
+        {cmByPerson.length > 0 && (
+          <Card className="glass-card mt-4">
+            <CardContent className="pt-4">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Performance by Campaign Manager</p>
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={cmByPerson}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-25} textAnchor="end" height={60} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(value: number, name: string) => [name === 'executed' ? `$${value.toLocaleString()}` : value.toLocaleString(), name === 'executed' ? '$ Executed' : name === 'campaigns' ? '# Campaigns' : '# Influencers']} />
+                  <Bar yAxisId="left" dataKey="campaigns" fill="hsl(var(--chart-purple))" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="influencers" fill="hsl(var(--chart-green))" radius={[4, 4, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="executed" stroke="hsl(var(--chart-orange))" strokeWidth={2} dot={{ r: 3 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </section>
     </div>
   );
