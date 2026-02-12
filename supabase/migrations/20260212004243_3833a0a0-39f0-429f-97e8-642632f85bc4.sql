@@ -1,1 +1,0 @@
-SELECT setval('public.team_kpis_id_seq', (SELECT COALESCE(MAX(id), 0) FROM public.team_kpis));

@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,62 +12,16 @@ serve(async (req) => {
   }
 
   try {
-    // Auth check
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const body = await req.json();
-    const campaign = body?.campaign;
-
-    // Input validation
-    if (!campaign || typeof campaign !== "object") {
-      return new Response(
-        JSON.stringify({ error: "Invalid request: campaign object required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const sanitize = (val: unknown, maxLen = 200): string => {
-      if (val == null) return "";
-      return String(val).slice(0, maxLen).replace(/[<>"'`]/g, "");
-    };
-    const safeNum = (val: unknown): number => {
-      const n = Number(val);
-      return isNaN(n) || !isFinite(n) ? 0 : n;
-    };
-
-    const budget = safeNum(campaign.budget);
-    const spent = safeNum(campaign.spent);
-    const conversions = safeNum(campaign.conversions);
-    const impressions = safeNum(campaign.impressions);
-
-    const spentPct = budget > 0 ? Math.round((spent / budget) * 100) : 0;
-    const cpa = conversions > 0 ? (spent / conversions).toFixed(2) : "N/A";
-    const cpm = impressions > 0 ? ((spent / impressions) * 1000).toFixed(2) : "N/A";
+    const { campaign } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    const spentPct = campaign.budget > 0 ? Math.round((campaign.spent / campaign.budget) * 100) : 0;
+    const cpa = campaign.conversions > 0 ? (campaign.spent / campaign.conversions).toFixed(2) : "N/A";
+    const cpm = campaign.impressions > 0 ? ((campaign.spent / campaign.impressions) * 1000).toFixed(2) : "N/A";
 
     const systemPrompt = `You are a senior digital advertising strategist specializing in music industry campaigns. 
 Analyze campaign metrics and provide actionable insights. Be concise, data-driven, and specific. 
@@ -80,21 +33,21 @@ Always respond in Spanish. Use bullet points. Structure your response with these
 
     const userPrompt = `Analiza esta campaña publicitaria y genera insights accionables:
 
-- Campaña: ${sanitize(campaign.campaign_name)}
-- Cliente: ${sanitize(campaign.client_name)}
-- Manager: ${sanitize(campaign.campaign_manager, 100)}
-- Rol: ${sanitize(campaign.role, 50)}
-- Estado: ${sanitize(campaign.status, 50)}
-- Risk Score: ${safeNum(campaign.risk_score)}/3
-- Presupuesto: $${budget.toLocaleString()}
-- Gastado: $${spent.toLocaleString()} (${spentPct}%)
-- Impresiones: ${impressions.toLocaleString()}
-- Conversiones: ${conversions.toLocaleString()}
+- Campaña: ${campaign.campaign_name}
+- Cliente: ${campaign.client_name}
+- Manager: ${campaign.campaign_manager}
+- Rol: ${campaign.role}
+- Estado: ${campaign.status}
+- Risk Score: ${campaign.risk_score}/3
+- Presupuesto: $${campaign.budget.toLocaleString()}
+- Gastado: $${campaign.spent.toLocaleString()} (${spentPct}%)
+- Impresiones: ${campaign.impressions.toLocaleString()}
+- Conversiones: ${campaign.conversions.toLocaleString()}
 - CPA: $${cpa}
 - CPM: $${cpm}
-- Días de ejecución: ${safeNum(campaign.execution_days)}
-- Insight actual: ${sanitize(campaign.ai_insight, 500)}
-- Acción requerida: ${sanitize(campaign.action_required, 500)}
+- Días de ejecución: ${campaign.execution_days}
+- Insight actual: ${campaign.ai_insight}
+- Acción requerida: ${campaign.action_required}
 
 Proporciona un análisis detallado con recomendaciones específicas y métricas de referencia de la industria musical.`;
 
@@ -129,7 +82,8 @@ Proporciona un análisis detallado con recomendaciones específicas y métricas 
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      console.error("AI gateway error:", response.status); // server-side only
+      const text = await response.text();
+      console.error("AI gateway error:", response.status, text);
       return new Response(
         JSON.stringify({ error: "Error al conectar con el servicio de IA" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -145,7 +99,7 @@ Proporciona un análisis detallado con recomendaciones específicas y métricas 
   } catch (e) {
     console.error("campaign-insights error:", e);
     return new Response(
-      JSON.stringify({ error: "Error processing request" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

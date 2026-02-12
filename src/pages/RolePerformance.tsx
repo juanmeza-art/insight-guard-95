@@ -8,8 +8,8 @@ import {
   DollarSign, Hash, TrendingUp, ShieldCheck, Clock, Wrench,
   Users, Zap, BarChart3, CalendarDays
 } from 'lucide-react';
-import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Line, ComposedChart } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 type Period = '7d' | '30d' | '90d' | 'ytd' | 'all';
 
@@ -141,17 +141,22 @@ export default function RolePerformance() {
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 8);
   }, [filtered]);
 
-  const cmByPerson = useMemo(() => {
-    const map: Record<string, { name: string; campaigns: number; influencers: number; executed: number }> = {};
-    filteredKPIs.forEach(k => {
-      const name = k.team_name || 'Sin asignar';
-      if (!map[name]) map[name] = { name, campaigns: 0, influencers: 0, executed: 0 };
-      map[name].campaigns++;
-      map[name].influencers += k.num_influencers;
-      map[name].executed += k.output_count;
+  const statusDistribution = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach(p => {
+      const s = p.status || 'Unknown';
+      map[s] = (map[s] || 0) + 1;
     });
-    return Object.values(map).sort((a, b) => b.campaigns - a.campaigns).slice(0, 10);
-  }, [filteredKPIs]);
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [filtered]);
+
+  const chartConfig = {
+    presented: { label: 'Presented', color: 'hsl(var(--chart-blue))' },
+    approved: { label: 'Approved', color: 'hsl(var(--chart-green))' },
+    total: { label: 'Total', color: 'hsl(var(--chart-orange))' },
+    onTime: { label: 'On Time', color: 'hsl(var(--chart-green))' },
+    adjustments: { label: 'Adjustments', color: 'hsl(var(--chart-red))' },
+  };
 
   if (loadingP || loadingK) {
     return (
@@ -160,11 +165,6 @@ export default function RolePerformance() {
       </div>
     );
   }
-
-  const renderPieLabel = ({ name, percent }: { name: string; percent: number }) => {
-    const short = name.length > 10 ? name.slice(0, 10) + '…' : name;
-    return `${short} ${(percent * 100).toFixed(0)}%`;
-  };
 
   return (
     <div className="space-y-6">
@@ -194,62 +194,67 @@ export default function RolePerformance() {
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
           <Users className="h-4 w-4 text-[hsl(var(--chart-blue))]" /> CSM
         </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3">
-            <KPICard label="Total $ Presented" value={fmt$(csmTotal$)} icon={DollarSign} color="text-[hsl(var(--chart-blue))]" delay={0} />
-            <KPICard label="# Campaigns" value={csmTotalN} icon={Hash} color="text-[hsl(var(--chart-blue))]" delay={0.05} />
-            <KPICard label="Approved $" value={fmt$(csmApproved$)} icon={TrendingUp} color="text-[hsl(var(--chart-green))]" delay={0.1} subtitle={`${csmApprovedN} campaigns`} />
-            <KPICard label="Approval Rate" value={pct(csmApproved$, csmTotal$)} icon={ShieldCheck} color="text-[hsl(var(--chart-green))]" delay={0.15} subtitle={`${pct(csmApprovedN, csmTotalN)} by #`} />
-            <KPICard label="Seller SLA Miss" value={pct(sellerSlaNO, csmTotalN)} icon={Clock} color="text-[hsl(var(--chart-red))]" delay={0.2} subtitle={`${sellerSlaNO} of ${csmTotalN}`} />
-          </div>
-          {csmByPerson.length > 0 && (
-            <Card className="glass-card flex flex-col items-center justify-center">
-              <CardContent className="pt-4 w-full">
-                <p className="text-xs font-semibold text-muted-foreground mb-2 text-center">$ by CSM</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie data={csmByPerson} dataKey="presented" nameKey="name" cx="50%" cy="50%" outerRadius={75} label={renderPieLabel} labelLine={false} fontSize={9}>
-                      {csmByPerson.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          )}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <KPICard label="Total $ Presented" value={fmt$(csmTotal$)} icon={DollarSign} color="text-[hsl(var(--chart-blue))]" delay={0} />
+          <KPICard label="# Campaigns" value={csmTotalN} icon={Hash} color="text-[hsl(var(--chart-blue))]" delay={0.05} />
+          <KPICard label="Approved $" value={fmt$(csmApproved$)} icon={TrendingUp} color="text-[hsl(var(--chart-green))]" delay={0.1} subtitle={`${csmApprovedN} campaigns`} />
+          <KPICard label="Approval Rate" value={pct(csmApproved$, csmTotal$)} icon={ShieldCheck} color="text-[hsl(var(--chart-green))]" delay={0.15} subtitle={`${pct(csmApprovedN, csmTotalN)} by #`} />
+          <KPICard label="Seller SLA Miss" value={pct(sellerSlaNO, csmTotalN)} icon={Clock} color="text-[hsl(var(--chart-red))]" delay={0.2} subtitle={`${sellerSlaNO} of ${csmTotalN}`} />
         </div>
       </section>
+
+      {/* CSM Chart */}
+      {csmByPerson.length > 0 && (
+        <Card className="glass-card">
+          <CardContent className="pt-4">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">$ Presented vs Approved by CSM</p>
+            <ChartContainer config={chartConfig} className="h-[220px] w-full">
+              <BarChart data={csmByPerson} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={100} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="presented" fill="hsl(var(--chart-blue))" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="approved" fill="hsl(var(--chart-green))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Listbuilders Section */}
       <section>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
           <Wrench className="h-4 w-4 text-[hsl(var(--chart-orange))]" /> List Builders
         </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3">
-            <KPICard label="Total $ Presented" value={fmt$(lbTotal$)} icon={DollarSign} color="text-[hsl(var(--chart-orange))]" delay={0} />
-            <KPICard label="# Campaigns" value={lbTotalN} icon={Hash} color="text-[hsl(var(--chart-orange))]" delay={0.05} />
-            <KPICard label="Approved $" value={fmt$(lbApproved$)} icon={TrendingUp} color="text-[hsl(var(--chart-green))]" delay={0.1} subtitle={`${lbApprovedN} campaigns`} />
-            <KPICard label="Within LB SLA" value={pct(lbSlaYES, lbTotalN)} icon={ShieldCheck} color="text-[hsl(var(--chart-green))]" delay={0.15} subtitle={`${lbSlaYES} of ${lbTotalN}`} />
-            <KPICard label="Needed Adjustments" value={pct(lbAdjustments, lbTotalN)} icon={Wrench} color="text-[hsl(var(--chart-red))]" delay={0.2} subtitle={`${lbAdjustments} proposals`} />
-          </div>
-          {lbByPerson.length > 0 && (
-            <Card className="glass-card flex flex-col items-center justify-center">
-              <CardContent className="pt-4 w-full">
-                <p className="text-xs font-semibold text-muted-foreground mb-2 text-center">Proposals by List Builder</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie data={lbByPerson} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={75} label={renderPieLabel} labelLine={false} fontSize={9}>
-                      {lbByPerson.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          )}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <KPICard label="Total $ Presented" value={fmt$(lbTotal$)} icon={DollarSign} color="text-[hsl(var(--chart-orange))]" delay={0} />
+          <KPICard label="# Campaigns" value={lbTotalN} icon={Hash} color="text-[hsl(var(--chart-orange))]" delay={0.05} />
+          <KPICard label="Approved $" value={fmt$(lbApproved$)} icon={TrendingUp} color="text-[hsl(var(--chart-green))]" delay={0.1} subtitle={`${lbApprovedN} campaigns`} />
+          <KPICard label="Within LB SLA" value={pct(lbSlaYES, lbTotalN)} icon={ShieldCheck} color="text-[hsl(var(--chart-green))]" delay={0.15} subtitle={`${lbSlaYES} of ${lbTotalN}`} />
+          <KPICard label="Needed Adjustments" value={pct(lbAdjustments, lbTotalN)} icon={Wrench} color="text-[hsl(var(--chart-red))]" delay={0.2} subtitle={`${lbAdjustments} proposals`} />
         </div>
       </section>
+
+      {/* LB Chart */}
+      {lbByPerson.length > 0 && (
+        <Card className="glass-card">
+          <CardContent className="pt-4">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Proposals by List Builder</p>
+            <ChartContainer config={chartConfig} className="h-[220px] w-full">
+              <BarChart data={lbByPerson} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="total" fill="hsl(var(--chart-orange))" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="onTime" fill="hsl(var(--chart-green))" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="adjustments" fill="hsl(var(--chart-red))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Campaign Managers Section */}
       <section>
@@ -262,26 +267,8 @@ export default function RolePerformance() {
           <KPICard label="# Influencers" value={cmInfluencers} icon={Users} color="text-[hsl(var(--chart-green))]" delay={0.1} />
           <KPICard label="Healthy Timelines" value={pct(cmHealthy, cmCampaigns)} icon={CalendarDays} color="text-[hsl(var(--chart-green))]" delay={0.15} subtitle={`${cmHealthy} of ${cmCampaigns}`} />
         </div>
-        {cmByPerson.length > 0 && (
-          <Card className="glass-card mt-4">
-            <CardContent className="pt-4">
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Performance by Campaign Manager</p>
-              <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={cmByPerson}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-25} textAnchor="end" height={60} />
-                  <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(value: number, name: string) => [name === 'executed' ? `$${value.toLocaleString()}` : value.toLocaleString(), name === 'executed' ? '$ Executed' : name === 'campaigns' ? '# Campaigns' : '# Influencers']} />
-                  <Bar yAxisId="left" dataKey="campaigns" fill="hsl(var(--chart-purple))" radius={[4, 4, 0, 0]} />
-                  <Bar yAxisId="left" dataKey="influencers" fill="hsl(var(--chart-green))" radius={[4, 4, 0, 0]} />
-                  <Line yAxisId="right" type="monotone" dataKey="executed" stroke="hsl(var(--chart-orange))" strokeWidth={2} dot={{ r: 3 }} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
       </section>
+
     </div>
   );
 }

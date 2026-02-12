@@ -35,6 +35,7 @@ export function AIInsightButton({ campaign }: Props) {
 
       setInsight(data.insight);
     } catch (e: any) {
+      console.error(e);
       toast.error('Error generating AI analysis');
       setOpen(false);
     } finally {

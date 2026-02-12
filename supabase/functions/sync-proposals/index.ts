@@ -6,18 +6,17 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-webhook-secret",
 };
 
-const MAX_ROWS = 1000;
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify webhook secret
   const secret = req.headers.get("x-webhook-secret");
   const expectedSecret = Deno.env.get("WEBHOOK_SECRET");
   if (!expectedSecret) {
     return new Response(
-      JSON.stringify({ error: "Server configuration error" }),
+      JSON.stringify({ error: "WEBHOOK_SECRET not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -30,67 +29,52 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const rows: unknown[] = Array.isArray(body) ? body : [body];
-
-    if (rows.length > MAX_ROWS) {
-      return new Response(
-        JSON.stringify({ error: `Too many rows (max ${MAX_ROWS})` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const safeStr = (v: unknown, max = 500): string | null => {
-      if (v == null) return null;
-      return String(v).slice(0, max);
-    };
-    const safeNum = (v: unknown, def = 0): number => {
-      const n = Number(v);
-      return isNaN(n) || !isFinite(n) ? def : n;
-    };
+    const rows: any[] = Array.isArray(body) ? body : [body];
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const mapped = rows.map((r: any) => ({
-      monday_item_id: safeStr(r?.monday_item_id, 100),
-      name: safeStr(r?.name) ?? "Untitled",
-      status: safeStr(r?.status, 50) ?? "To Do",
-      list_builder: safeStr(r?.list_builder, 200),
-      creative_builder: safeStr(r?.creative_builder, 200),
-      csm: safeStr(r?.csm, 200),
-      seller: safeStr(r?.seller, 200),
-      company: safeStr(r?.company, 200),
-      total_budget: safeNum(r?.total_budget),
-      influencers_budget: safeNum(r?.influencers_budget),
-      sub_campaign_budget: safeNum(r?.sub_campaign_budget),
-      take_rate_pct: safeNum(r?.take_rate_pct),
-      creators_expected: safeNum(r?.creators_expected),
-      audience_country: safeStr(r?.audience_country, 100),
-      musical_genre: safeStr(r?.musical_genre, 100),
-      currency: safeStr(r?.currency, 10) ?? "USD",
-      deal_created_date: safeStr(r?.deal_created_date, 10),
-      proposal_board_start_date: safeStr(r?.proposal_board_start_date, 10),
-      proposal_delivery_date: safeStr(r?.proposal_delivery_date, 10),
-      building_proposal_start_date: safeStr(r?.building_proposal_start_date, 10),
-      pending_approval_start_date: safeStr(r?.pending_approval_start_date, 10),
-      execution_board_start_date: safeStr(r?.execution_board_start_date, 10),
-      days_building_proposal: r?.days_building_proposal != null ? safeNum(r.days_building_proposal) : null,
-      timing_of_delivery: safeStr(r?.timing_of_delivery, 100),
-      proposal_adjustments: safeNum(r?.proposal_adjustments),
-      declined_reasons: safeStr(r?.declined_reasons, 1000),
-    }));
-
     const { data, error } = await supabase
       .from("proposals")
-      .upsert(mapped, { onConflict: "monday_item_id" })
+      .upsert(
+        rows.map((r) => ({
+          monday_item_id: r.monday_item_id,
+          name: r.name,
+          status: r.status ?? "To Do",
+          list_builder: r.list_builder,
+          creative_builder: r.creative_builder,
+          csm: r.csm,
+          seller: r.seller,
+          company: r.company,
+          total_budget: r.total_budget ?? 0,
+          influencers_budget: r.influencers_budget ?? 0,
+          sub_campaign_budget: r.sub_campaign_budget ?? 0,
+          take_rate_pct: r.take_rate_pct ?? 0,
+          creators_expected: r.creators_expected ?? 0,
+          audience_country: r.audience_country,
+          musical_genre: r.musical_genre,
+          currency: r.currency ?? "USD",
+          deal_created_date: r.deal_created_date,
+          proposal_board_start_date: r.proposal_board_start_date,
+          proposal_delivery_date: r.proposal_delivery_date,
+          building_proposal_start_date: r.building_proposal_start_date,
+          pending_approval_start_date: r.pending_approval_start_date,
+          execution_board_start_date: r.execution_board_start_date,
+          days_building_proposal: r.days_building_proposal,
+          timing_of_delivery: r.timing_of_delivery,
+          proposal_adjustments: r.proposal_adjustments ?? 0,
+          declined_reasons: r.declined_reasons,
+        })),
+        { onConflict: "monday_item_id" }
+      )
       .select();
 
     if (error) {
       console.error("Upsert error:", error);
       return new Response(
-        JSON.stringify({ error: "Database operation failed" }),
+        JSON.stringify({ error: error.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -102,7 +86,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("Sync error:", err);
     return new Response(
-      JSON.stringify({ error: "Error processing request" }),
+      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

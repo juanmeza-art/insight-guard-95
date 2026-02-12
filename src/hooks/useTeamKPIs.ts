@@ -27,24 +27,14 @@ export function useTeamKPIs() {
   return useQuery({
     queryKey: ['team-kpis'],
     queryFn: async (): Promise<TeamKPI[]> => {
-      // Fetch all rows (bypass 1000-row default limit)
-      let allData: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      while (true) {
-        const { data, error } = await supabase
-          .from('team_kpis')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        allData = allData.concat(data);
-        if (data.length < pageSize) break;
-        from += pageSize;
-      }
+      const { data, error } = await supabase
+        .from('team_kpis')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      return (allData ?? []).map((row: any) => ({
+      if (error) throw error;
+
+      return (data ?? []).map((row: any) => ({
         id: row.id,
         campaign_name: row.campaign_name,
         team_name: row.team_name,
