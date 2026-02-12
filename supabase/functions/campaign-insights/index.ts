@@ -129,7 +129,7 @@ Proporciona un análisis detallado con recomendaciones específicas y métricas 
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      console.error("AI gateway error:", response.status);
+      console.error("AI gateway error:", response.status); // server-side only
       return new Response(
         JSON.stringify({ error: "Error al conectar con el servicio de IA" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

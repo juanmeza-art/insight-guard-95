@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
   const expectedSecret = Deno.env.get("WEBHOOK_SECRET");
   if (!expectedSecret) {
     return new Response(
-      JSON.stringify({ error: "WEBHOOK_SECRET not configured" }),
+      JSON.stringify({ error: "Server configuration error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
 
     if (dlError || !fileData) {
       return new Response(
-        JSON.stringify({ error: `Download failed: ${dlError?.message}` }),
+        JSON.stringify({ error: "File download failed" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
