@@ -52,6 +52,12 @@ export function useTeamKPIs() {
         count_completed: Number(row.count_completed ?? 0),
         monday_id: row.monday_id,
         created_at: row.created_at,
+        company: row.company,
+        executed_amount: Number(row.executed_amount ?? 0),
+        executed_take_rate_pct: Number(row.executed_take_rate_pct ?? 0),
+        execution_start: row.execution_start,
+        execution_end: row.execution_end,
+        currency: row.currency,
       }));
     },
   });

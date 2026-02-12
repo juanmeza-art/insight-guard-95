@@ -58,6 +58,12 @@ Deno.serve(async (req) => {
           days_active: r.days_active ?? 0,
           count_sent: r.count_sent ?? 0,
           count_completed: r.count_completed ?? 0,
+          company: r.company,
+          executed_amount: r.executed_amount ?? 0,
+          executed_take_rate_pct: r.executed_take_rate_pct ?? 0,
+          execution_start: r.execution_start,
+          execution_end: r.execution_end,
+          currency: r.currency ?? "USD",
         })),
         { onConflict: "monday_id" }
       )

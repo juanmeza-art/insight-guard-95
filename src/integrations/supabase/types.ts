@@ -111,19 +111,23 @@ export type Database = {
         Row: {
           action_required: string | null
           ai_insight: string | null
+          audience_country: string | null
           budget: number | null
           building_proposal_start: string | null
           campaign_name: string | null
           company: string | null
           created_at: string | null
           csm: string | null
+          currency: string | null
           days_since_pending: number | null
           id: number
           lb_sla: string | null
           list_builder: string | null
           monday_id: string | null
+          musical_genre: string | null
           pending_approval_start: string | null
           proposal_adjustments: number | null
+          proposal_delivery_date: string | null
           risk_score: number | null
           seller_name: string | null
           seller_sla: string | null
@@ -133,19 +137,23 @@ export type Database = {
         Insert: {
           action_required?: string | null
           ai_insight?: string | null
+          audience_country?: string | null
           budget?: number | null
           building_proposal_start?: string | null
           campaign_name?: string | null
           company?: string | null
           created_at?: string | null
           csm?: string | null
+          currency?: string | null
           days_since_pending?: number | null
           id?: number
           lb_sla?: string | null
           list_builder?: string | null
           monday_id?: string | null
+          musical_genre?: string | null
           pending_approval_start?: string | null
           proposal_adjustments?: number | null
+          proposal_delivery_date?: string | null
           risk_score?: number | null
           seller_name?: string | null
           seller_sla?: string | null
@@ -155,19 +163,23 @@ export type Database = {
         Update: {
           action_required?: string | null
           ai_insight?: string | null
+          audience_country?: string | null
           budget?: number | null
           building_proposal_start?: string | null
           campaign_name?: string | null
           company?: string | null
           created_at?: string | null
           csm?: string | null
+          currency?: string | null
           days_since_pending?: number | null
           id?: number
           lb_sla?: string | null
           list_builder?: string | null
           monday_id?: string | null
+          musical_genre?: string | null
           pending_approval_start?: string | null
           proposal_adjustments?: number | null
+          proposal_delivery_date?: string | null
           risk_score?: number | null
           seller_name?: string | null
           seller_sla?: string | null
@@ -181,10 +193,16 @@ export type Database = {
           action_required: string | null
           ai_insight: string | null
           campaign_name: string | null
+          company: string | null
           count_completed: number | null
           count_sent: number | null
           created_at: string | null
+          currency: string | null
           days_active: number | null
+          executed_amount: number | null
+          executed_take_rate_pct: number | null
+          execution_end: string | null
+          execution_start: string | null
           id: number
           monday_id: string | null
           num_influencers: number | null
@@ -200,10 +218,16 @@ export type Database = {
           action_required?: string | null
           ai_insight?: string | null
           campaign_name?: string | null
+          company?: string | null
           count_completed?: number | null
           count_sent?: number | null
           created_at?: string | null
+          currency?: string | null
           days_active?: number | null
+          executed_amount?: number | null
+          executed_take_rate_pct?: number | null
+          execution_end?: string | null
+          execution_start?: string | null
           id?: number
           monday_id?: string | null
           num_influencers?: number | null
@@ -219,10 +243,16 @@ export type Database = {
           action_required?: string | null
           ai_insight?: string | null
           campaign_name?: string | null
+          company?: string | null
           count_completed?: number | null
           count_sent?: number | null
           created_at?: string | null
+          currency?: string | null
           days_active?: number | null
+          executed_amount?: number | null
+          executed_take_rate_pct?: number | null
+          execution_end?: string | null
+          execution_start?: string | null
           id?: number
           monday_id?: string | null
           num_influencers?: number | null
