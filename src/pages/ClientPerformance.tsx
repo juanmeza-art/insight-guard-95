@@ -17,6 +17,8 @@ const ClientPerformance = () => {
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
 
   const filtered = useMemo(() => {
     let result = selectedCompany === 'all' ? allKPIs : allKPIs.filter(k => k.company === selectedCompany);
@@ -66,7 +68,7 @@ const ClientPerformance = () => {
           <p className="text-sm text-muted-foreground">Historical campaign metrics by company</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Popover>
+          <Popover open={fromOpen} onOpenChange={setFromOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-[140px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
                 <CalendarIcon className="mr-1 h-3 w-3" />
@@ -74,10 +76,10 @@ const ClientPerformance = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setFromOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
-          <Popover>
+          <Popover open={toOpen} onOpenChange={setToOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-[140px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
                 <CalendarIcon className="mr-1 h-3 w-3" />
@@ -85,7 +87,7 @@ const ClientPerformance = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setToOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
           {(dateFrom || dateTo) && (
