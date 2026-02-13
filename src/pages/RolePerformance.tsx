@@ -15,26 +15,6 @@ import {
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Line, ComposedChart } from 'recharts';
 
-type Period = '7d' | '30d' | '90d' | 'ytd' | 'all';
-
-function getDateThreshold(period: Period): Date | null {
-  const now = new Date();
-  switch (period) {
-    case '7d': return new Date(now.getTime() - 7 * 86400000);
-    case '30d': return new Date(now.getTime() - 30 * 86400000);
-    case '90d': return new Date(now.getTime() - 90 * 86400000);
-    case 'ytd': return new Date(now.getFullYear(), 0, 1);
-    case 'all': return null;
-  }
-}
-
-const periods: { value: Period; label: string }[] = [
-  { value: '7d', label: '7 días' },
-  { value: '30d', label: '30 días' },
-  { value: '90d', label: '90 días' },
-  { value: 'ytd', label: 'YTD' },
-  { value: 'all', label: 'Todo' },
-];
 
 const APPROVED_STATUSES = ['Approved', 'Done', 'Completed', 'Executing', 'Ejecutando'];
 
@@ -81,29 +61,24 @@ const PIE_COLORS = [
 ];
 
 export default function RolePerformance() {
-  const [period, setPeriod] = useState<Period>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const { data: proposals = [], isLoading: loadingP } = useProposalsAudit();
   const { data: kpis = [], isLoading: loadingK } = useTeamKPIs();
 
   const filtered = useMemo(() => {
-    const threshold = getDateThreshold(period);
     let result = proposals;
-    if (threshold) result = result.filter(p => p.created_at && new Date(p.created_at) >= threshold);
     if (dateFrom) result = result.filter(p => (p.building_proposal_start || p.pending_approval_start) && new Date(p.building_proposal_start || p.pending_approval_start!) >= dateFrom);
     if (dateTo) result = result.filter(p => (p.building_proposal_start || p.pending_approval_start) && new Date(p.building_proposal_start || p.pending_approval_start!) <= dateTo);
     return result;
-  }, [proposals, period, dateFrom, dateTo]);
+  }, [proposals, dateFrom, dateTo]);
 
   const filteredKPIs = useMemo(() => {
-    const threshold = getDateThreshold(period);
     let result = kpis;
-    if (threshold) result = result.filter(k => k.created_at && new Date(k.created_at) >= threshold);
     if (dateFrom) result = result.filter(k => k.execution_start && new Date(k.execution_start) >= dateFrom);
     if (dateTo) result = result.filter(k => k.execution_start && new Date(k.execution_start) <= dateTo);
     return result;
-  }, [kpis, period]);
+  }, [kpis, dateFrom, dateTo]);
 
   // ---- CSM metrics ----
   const csmTotal$ = filtered.reduce((s, p) => s + p.budget, 0);
@@ -187,19 +162,6 @@ export default function RolePerformance() {
           <p className="text-sm text-muted-foreground">KPIs by role across the pipeline</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-            {periods.map(p => (
-              <Button
-                key={p.value}
-                variant={period === p.value ? 'default' : 'ghost'}
-                size="sm"
-                className="text-xs h-7 px-3"
-                onClick={() => setPeriod(p.value)}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-[130px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
