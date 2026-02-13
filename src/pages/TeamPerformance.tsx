@@ -19,13 +19,16 @@ const QUARTERLY_GOAL = 1_901_116;
 const MONTHLY_GOAL = 700_000;
 
 const STATUS_COLORS: Record<string, string> = {
-  'To Do': 'hsl(var(--chart-1))',
-  'Building Proposal': 'hsl(var(--chart-2))',
-  'Pending Approval': 'hsl(var(--chart-3))',
-  'Approved': 'hsl(var(--chart-4))',
-  'Sent to Execution': 'hsl(var(--chart-4))',
-  'Declined': 'hsl(var(--chart-5))',
+  'To Do': '#f97316',
+  'Building Proposal': '#3b82f6',
+  'Pending Approval': '#eab308',
+  'Approved': '#22c55e',
+  'Sent to Execution': '#22c55e',
+  'Declined': '#ef4444',
+  'In Progress': '#8b5cf6',
+  'Done': '#06b6d4',
 };
+const FALLBACK_COLORS = ['#f472b6', '#a78bfa', '#34d399', '#fb923c', '#60a5fa', '#fbbf24'];
 
 const fmtCurrency = (v: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
@@ -258,8 +261,8 @@ export default function TeamPerformance() {
                   <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  {allStatuses.map((s) => (
-                    <Bar key={s} dataKey={s} stackId="a" fill={STATUS_COLORS[s] || 'hsl(var(--muted))'} radius={[0, 0, 0, 0]} />
+                  {allStatuses.map((s, i) => (
+                    <Bar key={s} dataKey={s} stackId="a" fill={STATUS_COLORS[s] || FALLBACK_COLORS[i % FALLBACK_COLORS.length]} radius={[0, 0, 0, 0]} />
                   ))}
                 </BarChart>
               </ResponsiveContainer>
@@ -284,8 +287,8 @@ export default function TeamPerformance() {
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} className="fill-muted-foreground" />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} formatter={(v: number) => fmtCurrency(v)} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  {allStatuses.map((s) => (
-                    <Bar key={s} dataKey={s} stackId="a" fill={STATUS_COLORS[s] || 'hsl(var(--muted))'} radius={[0, 0, 0, 0]} />
+                  {allStatuses.map((s, i) => (
+                    <Bar key={s} dataKey={s} stackId="a" fill={STATUS_COLORS[s] || FALLBACK_COLORS[i % FALLBACK_COLORS.length]} radius={[0, 0, 0, 0]} />
                   ))}
                 </BarChart>
               </ResponsiveContainer>
@@ -345,8 +348,8 @@ export default function TeamPerformance() {
                   <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="campaigns" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="influencers" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="campaigns" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="influencers" fill="#f97316" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
