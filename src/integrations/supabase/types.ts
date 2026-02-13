@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_performance: {
+        Row: {
+          campaign_name: string | null
+          company: string | null
+          cpe: number | null
+          cpm: number | null
+          created_at: string | null
+          engagements: number | null
+          er_pct: number | null
+          executed_take_rate_pct: number | null
+          execution_end: string | null
+          execution_start: string | null
+          id: number
+          monday_id: string | null
+          num_influencers: number | null
+          num_ugc: number | null
+          output_count: number | null
+          sal_status: string | null
+          target_value: number | null
+          team_name: string | null
+          views: number | null
+        }
+        Insert: {
+          campaign_name?: string | null
+          company?: string | null
+          cpe?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          engagements?: number | null
+          er_pct?: number | null
+          executed_take_rate_pct?: number | null
+          execution_end?: string | null
+          execution_start?: string | null
+          id?: number
+          monday_id?: string | null
+          num_influencers?: number | null
+          num_ugc?: number | null
+          output_count?: number | null
+          sal_status?: string | null
+          target_value?: number | null
+          team_name?: string | null
+          views?: number | null
+        }
+        Update: {
+          campaign_name?: string | null
+          company?: string | null
+          cpe?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          engagements?: number | null
+          er_pct?: number | null
+          executed_take_rate_pct?: number | null
+          execution_end?: string | null
+          execution_start?: string | null
+          id?: number
+          monday_id?: string | null
+          num_influencers?: number | null
+          num_ugc?: number | null
+          output_count?: number | null
+          sal_status?: string | null
+          target_value?: number | null
+          team_name?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       proposals: {
         Row: {
           audience_country: string | null
