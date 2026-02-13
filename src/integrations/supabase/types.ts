@@ -119,6 +119,7 @@ export type Database = {
           created_at: string | null
           csm: string | null
           currency: string | null
+          days_after_approved: number | null
           days_since_pending: number | null
           id: number
           lb_sla: string | null
@@ -145,6 +146,7 @@ export type Database = {
           created_at?: string | null
           csm?: string | null
           currency?: string | null
+          days_after_approved?: number | null
           days_since_pending?: number | null
           id?: number
           lb_sla?: string | null
@@ -171,6 +173,7 @@ export type Database = {
           created_at?: string | null
           csm?: string | null
           currency?: string | null
+          days_after_approved?: number | null
           days_since_pending?: number | null
           id?: number
           lb_sla?: string | null

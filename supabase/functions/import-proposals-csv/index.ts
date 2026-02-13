@@ -121,36 +121,44 @@ Deno.serve(async (req) => {
     }
 
     const headers = parseCSVLine(lines[0]);
-    const colIndex = (name: string) => headers.indexOf(name);
+    const colIndex = (name: string, ...aliases: string[]) => {
+      let idx = headers.indexOf(name);
+      for (const a of aliases) { if (idx < 0) idx = headers.indexOf(a); }
+      return idx;
+    };
 
-    const iName = colIndex("Name");
-    const iStatus = colIndex("Status");
-    const iListBuilder = colIndex("List Builder");
-    const iSeller = colIndex("Seller");
-    const iCompany = colIndex("Company");
-    const iTotalBudget = colIndex("Total Budget");
-    const iCreativeBuilder = colIndex("Creative Builder");
-    const iDealCreated = colIndex("Deal Created Date");
-    const iProposalBoard = colIndex("Proposal Board Start Date");
-    const iCSM = colIndex("CSM");
-    const iAudienceCountry = colIndex("Audience Country");
-    const iMusicalGenre = colIndex("Musical Genre");
-    const iInfluencersBudget = colIndex("Influencers Budget");
-    const iSubCampaignBudget = colIndex("Sub-Campaign Budget");
-    const iTakeRate = colIndex("Take Rate %");
-    const iCreatorsExpected = colIndex("# Creators Expected");
-    const iCurrency = colIndex("Currency");
-    const iAdjustments = colIndex("# Proposal Adjustments");
-    const iDeclinedReasons = colIndex("Declined Reasons");
-    const iDeliveryDate = colIndex("Proposal Delivery Date");
-    const iBuildingStart = colIndex("Building Proposal Start Date");
-    const iPendingStart = colIndex("Pending Approval Start Date");
-    const iExecutionBoard = colIndex("Execution Board Start Date");
-    const iDaysBuilding = colIndex("Days Building Proposal");
-    const iTimingDelivery = colIndex("Timing of Delivery");
-    const iItemId = colIndex("Item ID");
-    const iSellerSLA = colIndex("Seller SLA");
-    const iLBSLA = colIndex("LB SLA");
+    // Detect format: DB export uses "campaign_name", Monday uses "Name"
+    const isDbFormat = headers.includes("campaign_name");
+
+    const iName = isDbFormat ? colIndex("campaign_name") : colIndex("Name");
+    const iStatus = colIndex("Status", "status");
+    const iListBuilder = colIndex("List Builder", "list_builder");
+    const iSeller = colIndex("Seller", "seller_name", "seller");
+    const iCompany = colIndex("Company", "company");
+    const iTotalBudget = colIndex("Total Budget", "budget", "total_budget");
+    const iCreativeBuilder = colIndex("Creative Builder", "creative_builder");
+    const iDealCreated = colIndex("Deal Created Date", "deal_created_date");
+    const iProposalBoard = colIndex("Proposal Board Start Date", "proposal_board_start_date");
+    const iCSM = colIndex("CSM", "csm");
+    const iAudienceCountry = colIndex("Audience Country", "audience_country");
+    const iMusicalGenre = colIndex("Musical Genre", "musical_genre");
+    const iInfluencersBudget = colIndex("Influencers Budget", "influencers_budget");
+    const iSubCampaignBudget = colIndex("Sub-Campaign Budget", "sub_campaign_budget");
+    const iTakeRate = colIndex("Take Rate %", "take_rate_pct");
+    const iCreatorsExpected = colIndex("# Creators Expected", "creators_expected");
+    const iCurrency = colIndex("Currency", "currency");
+    const iAdjustments = colIndex("# Proposal Adjustments", "proposal_adjustments");
+    const iDeclinedReasons = colIndex("Declined Reasons", "declined_reasons");
+    const iDeliveryDate = colIndex("Proposal Delivery Date", "proposal_delivery_date");
+    const iBuildingStart = colIndex("Building Proposal Start Date", "building_proposal_start");
+    const iPendingStart = colIndex("Pending Approval Start Date", "pending_approval_start");
+    const iExecutionBoard = colIndex("Execution Board Start Date", "Execution board start date");
+    const iDaysBuilding = colIndex("Days Building Proposal", "days_building_proposal");
+    const iTimingDelivery = colIndex("Timing of Delivery", "timing_of_delivery");
+    const iItemId = colIndex("Item ID", "monday_id");
+    const iSellerSLA = colIndex("Seller SLA", "seller_sla");
+    const iLBSLA = colIndex("LB SLA", "lb_sla");
+    const iDaysAfterApproved = colIndex("days_after_approved");
 
     const target = body.target || "proposals";
 
@@ -223,6 +231,7 @@ Deno.serve(async (req) => {
             days_since_pending: iDaysBuilding >= 0 ? parseIntVal(cols[iDaysBuilding]) ?? 0 : 0,
             seller_sla: iSellerSLA >= 0 ? cols[iSellerSLA] || "NO" : "NO",
             lb_sla: iLBSLA >= 0 ? cols[iLBSLA] || "NO" : "NO",
+            days_after_approved: iDaysAfterApproved >= 0 ? parseNum(cols[iDaysAfterApproved]) : null,
             risk_score: 1,
           });
         }
