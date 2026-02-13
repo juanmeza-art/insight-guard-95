@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ZAxis, Tooltip } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ZAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import type { ClientPerformanceRow } from '@/hooks/useClientPerformance';
 
 interface ScatterPlotProps {
@@ -28,14 +27,13 @@ export const CampaignScatterPlot = ({ data }: ScatterPlotProps) => {
     [data]
   );
 
-  const maxBudget = useMemo(
-    () => Math.max(...chartData.map((d) => d.target_value), 1),
-    [chartData]
-  );
-
-  const chartConfig = {
-    scatter: { label: 'Campaigns', color: 'hsl(var(--chart-blue))' },
-  };
+  if (!chartData.length) {
+    return (
+      <Card className="glass-card flex items-center justify-center h-48">
+        <p className="text-sm text-muted-foreground">No campaigns with views or engagements data</p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="glass-card">
@@ -48,23 +46,23 @@ export const CampaignScatterPlot = ({ data }: ScatterPlotProps) => {
         </p>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[340px] w-full">
-          <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+        <ResponsiveContainer width="100%" height={340}>
+          <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
             <XAxis
               dataKey="views"
               type="number"
               name="Views"
               tick={{ fontSize: 10 }}
-              tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
-              label={{ value: 'Views', position: 'insideBottom', offset: -5, fontSize: 11 }}
+              tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
+              label={{ value: 'Views', position: 'insideBottom', offset: -10, fontSize: 11 }}
             />
             <YAxis
               dataKey="engagements"
               type="number"
               name="Engagements"
               tick={{ fontSize: 10 }}
-              tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+              tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
               label={{ value: 'Engagements', angle: -90, position: 'insideLeft', fontSize: 11 }}
             />
             <ZAxis dataKey="target_value" range={[40, 400]} name="Budget" />
@@ -77,7 +75,7 @@ export const CampaignScatterPlot = ({ data }: ScatterPlotProps) => {
               strokeWidth={1}
             />
           </ScatterChart>
-        </ChartContainer>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );
