@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Clock, Lightbulb } from 'lucide-react';
+import { AlertTriangle, Clock, Lightbulb, CircleAlert } from 'lucide-react';
 import type { TeamKPI } from '@/types/team-kpi';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -51,6 +51,12 @@ export function UrgentAlerts({ data, currentManager }: Props) {
                     <div className="flex items-start gap-1.5">
                       <Lightbulb className="h-3 w-3 text-primary mt-0.5 shrink-0" />
                       <p className="text-[11px] text-muted-foreground leading-relaxed">{c.ai_insight}</p>
+                    </div>
+                  )}
+                  {c.action_required && (
+                    <div className="flex items-start gap-1.5">
+                      <CircleAlert className="h-3 w-3 text-[hsl(var(--risk-high))] mt-0.5 shrink-0" />
+                      <p className="text-[11px] font-medium text-foreground/80 leading-relaxed">{c.action_required}</p>
                     </div>
                   )}
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
