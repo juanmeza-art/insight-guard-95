@@ -8,9 +8,15 @@ interface KPICardsProps {
 
 export const KPICards = ({ data }: KPICardsProps) => {
   const totalExecuted = data.reduce((s, k) => s + k.target_value, 0);
-  const avgER = data.length ? data.reduce((s, k) => s + k.er_pct, 0) / data.length : 0;
-  const avgCPM = data.length ? data.reduce((s, k) => s + k.cpm, 0) / data.length : 0;
-  const avgTakeRate = data.length ? data.reduce((s, k) => s + k.executed_take_rate_pct, 0) / data.length : 0;
+
+  const erData = data.filter((k) => k.er_pct > 0);
+  const avgER = erData.length ? erData.reduce((s, k) => s + k.er_pct, 0) / erData.length : 0;
+
+  const cpmData = data.filter((k) => k.cpm > 0);
+  const avgCPM = cpmData.length ? cpmData.reduce((s, k) => s + k.cpm, 0) / cpmData.length : 0;
+
+  const trData = data.filter((k) => k.executed_take_rate_pct > 0);
+  const avgTakeRate = trData.length ? trData.reduce((s, k) => s + k.executed_take_rate_pct, 0) / trData.length : 0;
 
   const cards = [
     {

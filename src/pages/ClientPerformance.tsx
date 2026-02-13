@@ -1,4 +1,5 @@
 import { CalendarIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -26,6 +27,8 @@ const ClientPerformance = () => {
     if (dateTo) result = result.filter(k => k.execution_start && new Date(k.execution_start) <= dateTo);
     return result;
   }, [allKPIs, selectedCompany, dateFrom, dateTo]);
+
+  const hasScatterData = filtered.some((d) => d.views > 0 || d.engagements > 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -78,11 +81,48 @@ const ClientPerformance = () => {
       {/* KPI Cards */}
       <KPICards data={filtered} />
 
-      {/* Scatter Plot */}
-      <CampaignScatterPlot data={filtered} />
+      {/* Scatter Plot — only show when there's data */}
+      {hasScatterData && <CampaignScatterPlot data={filtered} />}
 
       {/* Gantt Timeline */}
       <GanttTimeline data={filtered} />
+
+      {/* Campaign Detail Cards */}
+      {selectedCompany !== 'all' && filtered.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map(kpi => {
+            const rows: { label: string; value: string }[] = [];
+            if (kpi.team_name) rows.push({ label: 'Team', value: kpi.team_name });
+            if (kpi.target_value > 0) rows.push({ label: 'Total Budget', value: `$${kpi.target_value.toLocaleString()}` });
+            if (kpi.executed_take_rate_pct > 0) rows.push({ label: 'Take Rate', value: `${kpi.executed_take_rate_pct}%` });
+            if (kpi.cpm > 0) rows.push({ label: 'CPM', value: `$${kpi.cpm.toLocaleString(undefined, { maximumFractionDigits: 2 })}` });
+            if (kpi.cpe > 0) rows.push({ label: 'CPE', value: `$${kpi.cpe.toLocaleString(undefined, { maximumFractionDigits: 2 })}` });
+            if (kpi.views > 0) rows.push({ label: 'Views', value: kpi.views.toLocaleString() });
+            if (kpi.engagements > 0) rows.push({ label: 'Engagements', value: kpi.engagements.toLocaleString() });
+            if (kpi.er_pct > 0) rows.push({ label: 'ER%', value: `${kpi.er_pct.toFixed(2)}%` });
+            if (kpi.sal_status) rows.push({ label: 'Status', value: kpi.sal_status });
+            if (kpi.execution_start) rows.push({ label: 'Period', value: `${kpi.execution_start} → ${kpi.execution_end ?? '—'}` });
+
+            if (!rows.length) return null;
+
+            return (
+              <Card key={kpi.id} className="glass-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{kpi.campaign_name || 'Unnamed'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 text-xs text-muted-foreground">
+                  {rows.map((r) => (
+                    <div key={r.label} className="flex justify-between">
+                      <span>{r.label}</span>
+                      <span className="text-foreground">{r.value}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
