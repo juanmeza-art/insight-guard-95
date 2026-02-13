@@ -19,6 +19,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof
   'Adjusting': { label: 'Adjusting', color: 'bg-orange-500/20 text-orange-400', icon: AlertTriangle },
   'Pending Approval': { label: 'Pending', color: 'bg-purple-500/20 text-purple-400', icon: Loader2 },
   'Sent to Execution': { label: 'Approved', color: 'bg-green-500/20 text-green-400', icon: CheckCircle2 },
+  'Approved': { label: 'Approved', color: 'bg-green-500/20 text-green-400', icon: CheckCircle2 },
   'Declined': { label: 'Declined', color: 'bg-red-500/20 text-red-400', icon: XCircle },
 };
 
@@ -38,7 +39,10 @@ const Proposals = () => {
 
   const filtered = useMemo(() => {
     let result = proposals;
-    if (statusFilter !== 'all') result = result.filter(p => p.status === statusFilter);
+    if (statusFilter !== 'all') {
+      const matchStatuses = statusFilter === 'Approved' ? ['Approved', 'Sent to Execution'] : [statusFilter];
+      result = result.filter(p => matchStatuses.includes(p.status ?? ''));
+    }
     if (roleFilter !== 'all') {
       result = result.filter(p => {
         if (roleFilter === 'List Builder') return !!p.list_builder;
@@ -64,7 +68,7 @@ const Proposals = () => {
 
   const stats = useMemo(() => {
     const total = proposals.length;
-    const approved = proposals.filter(p => p.status === 'Sent to Execution').length;
+    const approved = proposals.filter(p => p.status === 'Sent to Execution' || p.status === 'Approved').length;
     const declined = proposals.filter(p => p.status === 'Declined').length;
     const pending = proposals.filter(p => p.status === 'Pending Approval').length;
     const building = proposals.filter(p => ['Building Proposal', 'Adjusting'].includes(p.status ?? '')).length;
@@ -215,14 +219,24 @@ const Proposals = () => {
 
       {/* Status breakdown */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2">
-        {Object.entries(STATUS_CONFIG).map(([status, cfg]) => {
-          const count = proposals.filter(p => p.status === status).length;
+        {[
+          { key: 'To Do', statuses: ['To Do'] },
+          { key: 'On Hold', statuses: ['On Hold'] },
+          { key: 'Building Proposal', statuses: ['Building Proposal'] },
+          { key: 'Adjusting', statuses: ['Adjusting'] },
+          { key: 'Pending Approval', statuses: ['Pending Approval'] },
+          { key: 'Approved', statuses: ['Approved', 'Sent to Execution'] },
+          { key: 'Declined', statuses: ['Declined'] },
+        ].map(({ key, statuses }) => {
+          const cfg = STATUS_CONFIG[key];
+          const count = proposals.filter(p => statuses.includes(p.status ?? '')).length;
           const Icon = cfg.icon;
+          const isActive = statuses.includes(statusFilter);
           return (
             <button
-              key={status}
-              onClick={() => setStatusFilter(statusFilter === status ? 'all' : status)}
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${cfg.color} ${statusFilter === status ? 'ring-2 ring-primary' : 'opacity-80 hover:opacity-100'}`}
+              key={key}
+              onClick={() => setStatusFilter(isActive ? 'all' : key)}
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${cfg.color} ${isActive ? 'ring-2 ring-primary' : 'opacity-80 hover:opacity-100'}`}
             >
               <Icon className="h-3.5 w-3.5" />
               <span>{cfg.label}</span>
