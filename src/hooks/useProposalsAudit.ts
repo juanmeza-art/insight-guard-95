@@ -58,6 +58,7 @@ export function useProposalsAudit() {
           .from('proposals_audit')
           .select('*')
           .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
           .range(offset, offset + PAGE - 1);
 
         if (error) throw error;
