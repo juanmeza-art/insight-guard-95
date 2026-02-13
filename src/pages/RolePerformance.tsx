@@ -63,6 +63,8 @@ const PIE_COLORS = [
 export default function RolePerformance() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
   const { data: proposals = [], isLoading: loadingP } = useProposalsAudit();
   const { data: kpis = [], isLoading: loadingK } = useTeamKPIs();
 
@@ -162,7 +164,7 @@ export default function RolePerformance() {
           <p className="text-sm text-muted-foreground">KPIs by role across the pipeline</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Popover>
+          <Popover open={fromOpen} onOpenChange={setFromOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-[130px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
                 <CalendarDays className="mr-1 h-3 w-3" />
@@ -170,10 +172,10 @@ export default function RolePerformance() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setFromOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
-          <Popover>
+          <Popover open={toOpen} onOpenChange={setToOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-[130px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
                 <CalendarDays className="mr-1 h-3 w-3" />
@@ -181,7 +183,7 @@ export default function RolePerformance() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setToOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
           {(dateFrom || dateTo) && (

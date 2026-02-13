@@ -36,6 +36,8 @@ const Proposals = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
 
   const filtered = useMemo(() => {
     let result = proposals;
@@ -144,7 +146,7 @@ const Proposals = () => {
               <SelectItem value="Seller">Seller</SelectItem>
             </SelectContent>
           </Select>
-          <Popover>
+          <Popover open={fromOpen} onOpenChange={setFromOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("h-8 text-xs gap-1.5", !dateFrom && "text-muted-foreground")}>
                 <CalendarIcon className="h-3.5 w-3.5" />
@@ -152,10 +154,10 @@ const Proposals = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              <CalendarComponent mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setFromOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
-          <Popover>
+          <Popover open={toOpen} onOpenChange={setToOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("h-8 text-xs gap-1.5", !dateTo && "text-muted-foreground")}>
                 <CalendarIcon className="h-3.5 w-3.5" />
@@ -163,7 +165,7 @@ const Proposals = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              <CalendarComponent mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setToOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
           {(dateFrom || dateTo) && (
