@@ -106,8 +106,9 @@ export function RiskAuditGrid({ data }: Props) {
                   </div>
                 </div>
 
-                {/* AI Insight Button */}
-                <div className="flex justify-end pt-1">
+                {/* Budget + AI Insight Button */}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs font-mono text-muted-foreground">${c.target_value.toLocaleString()}</span>
                   <AIInsightButton campaign={c} />
                 </div>
               </CardContent>

@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Activity, Send, CheckCircle, AlertTriangle, BarChart3 } from 'lucide-react';
+import { Users, Activity, Send, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
 import type { TeamKPI } from '@/types/team-kpi';
 import { motion } from 'framer-motion';
 
@@ -13,12 +13,14 @@ export function KPIOverview({ data }: Props) {
   const totalSent = data.reduce((s, d) => s + d.count_sent, 0);
   const totalCompleted = data.reduce((s, d) => s + d.count_completed, 0);
   const highRisk = data.filter(d => d.risk_score >= 3).length;
-  const avgProgress = data.length ? Math.round(data.reduce((s, d) => s + d.progress_pct, 0) / data.length) : 0;
+  const totalBudget = data.reduce((s, d) => s + d.target_value, 0);
 
-  const cards = [
+  const formatUSD = (v: number) => v >= 1000 ? `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `$${v}`;
+
+  const cards: { label: string; value: string | number; icon: typeof Activity; color: string }[] = [
     { label: 'Campaigns', value: data.length, icon: Activity, color: 'text-[hsl(var(--chart-blue))]' },
+    { label: 'Total Budget', value: formatUSD(totalBudget), icon: DollarSign, color: 'text-[hsl(var(--chart-blue))]' },
     { label: 'Influencers', value: totalInfluencers, icon: Users, color: 'text-[hsl(var(--chart-green))]' },
-    { label: 'UGC', value: totalUGC, icon: BarChart3, color: 'text-[hsl(var(--chart-purple))]' },
     { label: 'Sent', value: totalSent, icon: Send, color: 'text-[hsl(var(--chart-orange))]' },
     { label: 'Completed', value: totalCompleted, icon: CheckCircle, color: 'text-[hsl(var(--chart-green))]' },
     { label: 'High Risk', value: highRisk, icon: AlertTriangle, color: 'text-[hsl(var(--risk-high))]' },
