@@ -1,10 +1,14 @@
 import { useMemo, useState } from 'react';
-import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Loader2, LayoutGrid, List, Lightbulb, ArrowRight, AlertCircle, DollarSign, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Loader2, LayoutGrid, List, Lightbulb, ArrowRight, AlertCircle, DollarSign, Calendar, CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { useProposalsAudit, type ProposalAudit } from '@/hooks/useProposalsAudit';
 import { motion } from 'framer-motion';
 
@@ -29,6 +33,8 @@ const Proposals = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const filtered = useMemo(() => {
     let result = proposals;
@@ -41,8 +47,20 @@ const Proposals = () => {
         return true;
       });
     }
+    if (dateFrom) {
+      result = result.filter(p => {
+        const d = p.building_proposal_start || p.pending_approval_start;
+        return d ? new Date(d) >= dateFrom : false;
+      });
+    }
+    if (dateTo) {
+      result = result.filter(p => {
+        const d = p.building_proposal_start || p.pending_approval_start;
+        return d ? new Date(d) <= dateTo : false;
+      });
+    }
     return result;
-  }, [proposals, statusFilter, roleFilter]);
+  }, [proposals, statusFilter, roleFilter, dateFrom, dateTo]);
 
   const stats = useMemo(() => {
     const total = proposals.length;
@@ -99,7 +117,7 @@ const Proposals = () => {
           <h1 className="text-xl font-bold tracking-tight">Proposals</h1>
           <p className="text-sm text-muted-foreground">Sales cycle, approval rates & team breakdown</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[160px] h-8 text-xs">
               <SelectValue placeholder="All statuses" />
@@ -122,6 +140,33 @@ const Proposals = () => {
               <SelectItem value="Seller">Seller</SelectItem>
             </SelectContent>
           </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("h-8 text-xs gap-1.5", !dateFrom && "text-muted-foreground")}>
+                <CalendarIcon className="h-3.5 w-3.5" />
+                {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("h-8 text-xs gap-1.5", !dateTo && "text-muted-foreground")}>
+                <CalendarIcon className="h-3.5 w-3.5" />
+                {dateTo ? format(dateTo, "MMM d, yyyy") : "To"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+              Clear dates
+            </Button>
+          )}
         </div>
       </div>
 
