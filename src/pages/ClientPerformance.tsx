@@ -1,6 +1,11 @@
-import { Monitor } from 'lucide-react';
+import { Monitor, CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useState, useMemo } from 'react';
@@ -10,8 +15,15 @@ const ClientPerformance = () => {
   const { data: allKPIs = [] } = useTeamKPIs();
   const companies = [...new Set(allKPIs.map(k => k.company).filter(Boolean))].sort();
   const [selectedCompany, setSelectedCompany] = useState('all');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
-  const filtered = selectedCompany === 'all' ? allKPIs : allKPIs.filter(k => k.company === selectedCompany);
+  const filtered = useMemo(() => {
+    let result = selectedCompany === 'all' ? allKPIs : allKPIs.filter(k => k.company === selectedCompany);
+    if (dateFrom) result = result.filter(k => k.execution_start && new Date(k.execution_start) >= dateFrom);
+    if (dateTo) result = result.filter(k => k.execution_start && new Date(k.execution_start) <= dateTo);
+    return result;
+  }, [allKPIs, selectedCompany, dateFrom, dateTo]);
 
   const totalInfluencers = filtered.reduce((s, k) => s + k.num_influencers, 0);
   const totalSent = filtered.reduce((s, k) => s + k.count_sent, 0);
@@ -48,22 +60,49 @@ const ClientPerformance = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight">Client Performance</h1>
           <p className="text-sm text-muted-foreground">Historical campaign metrics by company</p>
         </div>
-        <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-          <SelectTrigger className="w-[260px] glass-card text-xs">
-            <SelectValue placeholder="Select company" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Companies</SelectItem>
-            {companies.map(c => (
-              <SelectItem key={c} value={c!} className="text-xs">{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-[140px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                {dateFrom ? format(dateFrom, "MMM d, yy") : "From"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-[140px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                {dateTo ? format(dateTo, "MMM d, yy") : "To"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Clear</Button>
+          )}
+          <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+            <SelectTrigger className="w-[260px] glass-card text-xs">
+              <SelectValue placeholder="Select company" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Companies</SelectItem>
+              {companies.map(c => (
+                <SelectItem key={c} value={c!} className="text-xs">{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
