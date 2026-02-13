@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { useProposalsAudit } from '@/hooks/useProposalsAudit';
 import { useTeamKPIs } from '@/hooks/useTeamKPIs';
 import { motion } from 'framer-motion';
@@ -78,19 +82,27 @@ const PIE_COLORS = [
 
 export default function RolePerformance() {
   const [period, setPeriod] = useState<Period>('all');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const { data: proposals = [], isLoading: loadingP } = useProposalsAudit();
   const { data: kpis = [], isLoading: loadingK } = useTeamKPIs();
 
   const filtered = useMemo(() => {
     const threshold = getDateThreshold(period);
-    if (!threshold) return proposals;
-    return proposals.filter(p => p.created_at && new Date(p.created_at) >= threshold);
-  }, [proposals, period]);
+    let result = proposals;
+    if (threshold) result = result.filter(p => p.created_at && new Date(p.created_at) >= threshold);
+    if (dateFrom) result = result.filter(p => (p.building_proposal_start || p.pending_approval_start) && new Date(p.building_proposal_start || p.pending_approval_start!) >= dateFrom);
+    if (dateTo) result = result.filter(p => (p.building_proposal_start || p.pending_approval_start) && new Date(p.building_proposal_start || p.pending_approval_start!) <= dateTo);
+    return result;
+  }, [proposals, period, dateFrom, dateTo]);
 
   const filteredKPIs = useMemo(() => {
     const threshold = getDateThreshold(period);
-    if (!threshold) return kpis;
-    return kpis.filter(k => k.created_at && new Date(k.created_at) >= threshold);
+    let result = kpis;
+    if (threshold) result = result.filter(k => k.created_at && new Date(k.created_at) >= threshold);
+    if (dateFrom) result = result.filter(k => k.execution_start && new Date(k.execution_start) >= dateFrom);
+    if (dateTo) result = result.filter(k => k.execution_start && new Date(k.execution_start) <= dateTo);
+    return result;
   }, [kpis, period]);
 
   // ---- CSM metrics ----
@@ -174,18 +186,45 @@ export default function RolePerformance() {
           <h1 className="text-2xl font-bold tracking-tight">Role Performance</h1>
           <p className="text-sm text-muted-foreground">KPIs by role across the pipeline</p>
         </div>
-        <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-          {periods.map(p => (
-            <Button
-              key={p.value}
-              variant={period === p.value ? 'default' : 'ghost'}
-              size="sm"
-              className="text-xs h-7 px-3"
-              onClick={() => setPeriod(p.value)}
-            >
-              {p.label}
-            </Button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
+            {periods.map(p => (
+              <Button
+                key={p.value}
+                variant={period === p.value ? 'default' : 'ghost'}
+                size="sm"
+                className="text-xs h-7 px-3"
+                onClick={() => setPeriod(p.value)}
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-[130px] justify-start text-left text-xs", !dateFrom && "text-muted-foreground")}>
+                <CalendarDays className="mr-1 h-3 w-3" />
+                {dateFrom ? format(dateFrom, "MMM d, yy") : "From"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-[130px] justify-start text-left text-xs", !dateTo && "text-muted-foreground")}>
+                <CalendarDays className="mr-1 h-3 w-3" />
+                {dateTo ? format(dateTo, "MMM d, yy") : "To"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Clear</Button>
+          )}
         </div>
       </div>
 
