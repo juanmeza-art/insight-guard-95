@@ -1,6 +1,7 @@
 import { Activity, FileText, Monitor, Users } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
+import { InfluurPulseLogo } from '@/components/InfluurPulseLogo';
 import {
   Sidebar,
   SidebarContent,
@@ -30,14 +31,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <div className="flex items-center gap-2 px-4 h-14 border-b border-sidebar-border">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
-              <Activity className="h-3.5 w-3.5 text-primary-foreground" />
-            </div>
-            <span className="text-sm font-bold tracking-tight">OpIntel</span>
-          </div>
-        )}
+        {!collapsed && <InfluurPulseLogo size="sm" />}
         <SidebarTrigger className={collapsed ? 'mx-auto' : 'ml-auto'} />
       </div>
 
