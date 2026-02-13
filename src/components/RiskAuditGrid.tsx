@@ -71,7 +71,7 @@ export function RiskAuditGrid({ data }: Props) {
                     <span className="font-mono font-medium">{c.progress_pct}%</span>
                   </div>
                   <Progress value={c.progress_pct} className="h-1.5" />
-                  <p className="text-[10px] text-muted-foreground">{c.output_count} / {c.target_value} outputs</p>
+                  <p className="text-[10px] text-muted-foreground">{c.count_completed} / {c.output_count} outputs</p>
                 </div>
 
                 {/* Stat Boxes */}
