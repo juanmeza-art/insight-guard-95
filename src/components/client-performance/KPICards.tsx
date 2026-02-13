@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, Eye, Percent } from 'lucide-react';
+import { DollarSign, TrendingUp, Eye, Percent, LayoutList } from 'lucide-react';
 import type { ClientPerformanceRow } from '@/hooks/useClientPerformance';
 
 interface KPICardsProps {
@@ -19,6 +19,12 @@ export const KPICards = ({ data }: KPICardsProps) => {
   const avgTakeRate = trData.length ? trData.reduce((s, k) => s + k.executed_take_rate_pct, 0) / trData.length : 0;
 
   const cards = [
+    {
+      title: 'Campaigns',
+      value: data.length.toLocaleString(),
+      icon: LayoutList,
+      accent: 'text-foreground',
+    },
     {
       title: 'Executed Amount',
       value: `$${totalExecuted.toLocaleString()}`,
@@ -46,7 +52,7 @@ export const KPICards = ({ data }: KPICardsProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
       {cards.map((c) => (
         <Card key={c.title} className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
