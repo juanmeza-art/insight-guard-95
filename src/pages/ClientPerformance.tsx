@@ -89,32 +89,60 @@ const ClientPerformance = () => {
 
       {/* Campaign Detail Cards */}
       {selectedCompany !== 'all' && filtered.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(kpi => {
             const rows: { label: string; value: string }[] = [];
             if (kpi.team_name) rows.push({ label: 'Team', value: kpi.team_name });
             if (kpi.target_value > 0) rows.push({ label: 'Total Budget', value: `$${kpi.target_value.toLocaleString()}` });
             if (kpi.executed_take_rate_pct > 0) rows.push({ label: 'Take Rate', value: `${kpi.executed_take_rate_pct}%` });
-            if (kpi.cpm > 0) rows.push({ label: 'CPM', value: `$${kpi.cpm.toLocaleString(undefined, { maximumFractionDigits: 2 })}` });
-            if (kpi.cpe > 0) rows.push({ label: 'CPE', value: `$${kpi.cpe.toLocaleString(undefined, { maximumFractionDigits: 2 })}` });
             if (kpi.views > 0) rows.push({ label: 'Views', value: kpi.views.toLocaleString() });
             if (kpi.engagements > 0) rows.push({ label: 'Engagements', value: kpi.engagements.toLocaleString() });
-            if (kpi.er_pct > 0) rows.push({ label: 'ER%', value: `${kpi.er_pct.toFixed(2)}%` });
             if (kpi.sal_status) rows.push({ label: 'Status', value: kpi.sal_status });
             if (kpi.execution_start) rows.push({ label: 'Period', value: `${kpi.execution_start} → ${kpi.execution_end ?? '—'}` });
 
             if (!rows.length) return null;
 
+            const hasCpm = kpi.cpm > 0;
+            const hasCpe = kpi.cpe > 0;
+            const hasEr = kpi.er_pct > 0;
+            const hasMetrics = hasCpm || hasCpe || hasEr;
+
             return (
-              <Card key={kpi.id} className="glass-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{kpi.campaign_name || 'Unnamed'}</CardTitle>
+              <Card key={kpi.id} className="glass-card overflow-hidden">
+                {/* Header with gradient accent */}
+                <CardHeader className="pb-3 border-b border-border/40">
+                  <CardTitle className="text-sm font-semibold">{kpi.campaign_name || 'Unnamed'}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-1 text-xs text-muted-foreground">
+
+                {/* Performance metrics highlight strip */}
+                {hasMetrics && (
+                  <div className="grid grid-cols-3 divide-x divide-border/30 bg-primary/5">
+                    {hasCpm ? (
+                      <div className="px-3 py-2.5 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">CPM</p>
+                        <p className="text-sm font-bold text-chart-orange">${kpi.cpm.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                      </div>
+                    ) : <div className="px-3 py-2.5" />}
+                    {hasCpe ? (
+                      <div className="px-3 py-2.5 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">CPE</p>
+                        <p className="text-sm font-bold text-chart-blue">${kpi.cpe.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                      </div>
+                    ) : <div className="px-3 py-2.5" />}
+                    {hasEr ? (
+                      <div className="px-3 py-2.5 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">ER%</p>
+                        <p className="text-sm font-bold text-chart-green">{kpi.er_pct.toFixed(2)}%</p>
+                      </div>
+                    ) : <div className="px-3 py-2.5" />}
+                  </div>
+                )}
+
+                <CardContent className="pt-3 space-y-1.5 text-xs text-muted-foreground">
                   {rows.map((r) => (
                     <div key={r.label} className="flex justify-between">
                       <span>{r.label}</span>
-                      <span className="text-foreground">{r.value}</span>
+                      <span className="text-foreground font-medium">{r.value}</span>
                     </div>
                   ))}
                 </CardContent>
