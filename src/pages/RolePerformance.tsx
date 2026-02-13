@@ -158,12 +158,13 @@ export default function RolePerformance() {
   }, [filtered]);
 
   const cmByPerson = useMemo(() => {
-    const map: Record<string, { name: string; campaigns: number; influencers: number; executed: number }> = {};
+    const map: Record<string, { name: string; campaigns: number; influencers: number; ugc: number; executed: number }> = {};
     filteredKPIs.forEach(k => {
       const name = k.team_name || 'Sin asignar';
-      if (!map[name]) map[name] = { name, campaigns: 0, influencers: 0, executed: 0 };
+      if (!map[name]) map[name] = { name, campaigns: 0, influencers: 0, ugc: 0, executed: 0 };
       map[name].campaigns++;
       map[name].influencers += k.num_influencers;
+      map[name].ugc += k.num_ugc;
       map[name].executed += k.target_value;
     });
     return Object.values(map).sort((a, b) => b.campaigns - a.campaigns).slice(0, 10);
@@ -313,11 +314,12 @@ export default function RolePerformance() {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
                   <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-25} textAnchor="end" height={60} />
                   <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(value: number, name: string) => [name === 'executed' ? `$${value.toLocaleString()}` : value.toLocaleString(), name === 'executed' ? '$ Executed' : name === 'campaigns' ? '# Campaigns' : '# Influencers']} />
-                  <Bar yAxisId="left" dataKey="campaigns" fill="hsl(var(--chart-purple))" radius={[4, 4, 0, 0]} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: '# Campaigns', angle: 90, position: 'insideRight', style: { fontSize: 9, fill: '#9ca3af' } }} />
+                  <Tooltip formatter={(value: number, name: string) => [name === 'executed' ? `$${value.toLocaleString()}` : value.toLocaleString(), name === 'executed' ? '$ Executed' : name === 'campaigns' ? '# Campaigns' : name === 'ugc' ? '# UGC' : '# Influencers']} />
+                  <Bar yAxisId="right" dataKey="campaigns" fill="hsl(var(--chart-purple))" radius={[4, 4, 0, 0]} />
                   <Bar yAxisId="left" dataKey="influencers" fill="hsl(var(--chart-green))" radius={[4, 4, 0, 0]} />
-                  <Line yAxisId="right" type="monotone" dataKey="executed" stroke="hsl(var(--chart-orange))" strokeWidth={2} dot={{ r: 3 }} />
+                  <Bar yAxisId="left" dataKey="ugc" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Line yAxisId="left" type="monotone" dataKey="executed" stroke="hsl(var(--chart-orange))" strokeWidth={2} dot={{ r: 3 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </CardContent>
