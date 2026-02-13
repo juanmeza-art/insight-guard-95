@@ -10,10 +10,11 @@ import { useTeamKPIs } from '@/hooks/useTeamKPIs';
 import { motion } from 'framer-motion';
 import {
   DollarSign, Hash, TrendingUp, ShieldCheck, Clock, Wrench,
-  Users, Zap, BarChart3, CalendarDays
+  Users, Zap, BarChart3, CalendarDays, UserSearch
 } from 'lucide-react';
 import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Line, ComposedChart } from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 const APPROVED_STATUSES = ['Approved', 'Done', 'Completed', 'Executing', 'Ejecutando'];
@@ -65,22 +66,48 @@ export default function RolePerformance() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [fromOpen, setFromOpen] = useState(false);
   const [toOpen, setToOpen] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<string>('all');
   const { data: proposals = [], isLoading: loadingP } = useProposalsAudit();
   const { data: kpis = [], isLoading: loadingK } = useTeamKPIs();
+
+  // Collect all unique people across roles
+  const allPeople = useMemo(() => {
+    const names = new Set<string>();
+    proposals.forEach(p => {
+      if (p.csm) names.add(p.csm);
+      if (p.seller_name) names.add(p.seller_name);
+      if (p.list_builder) p.list_builder.split(',').map(n => n.trim()).forEach(n => { if (n) names.add(n); });
+    });
+    kpis.forEach(k => {
+      if (k.team_name) names.add(k.team_name);
+    });
+    return Array.from(names).sort();
+  }, [proposals, kpis]);
 
   const filtered = useMemo(() => {
     let result = proposals;
     if (dateFrom) result = result.filter(p => (p.building_proposal_start || p.pending_approval_start) && new Date(p.building_proposal_start || p.pending_approval_start!) >= dateFrom);
     if (dateTo) result = result.filter(p => (p.building_proposal_start || p.pending_approval_start) && new Date(p.building_proposal_start || p.pending_approval_start!) <= dateTo);
+    if (selectedPerson !== 'all') {
+      result = result.filter(p =>
+        p.csm === selectedPerson ||
+        p.seller_name === selectedPerson ||
+        (p.list_builder && p.list_builder.split(',').map(n => n.trim()).includes(selectedPerson))
+      );
+    }
     return result;
-  }, [proposals, dateFrom, dateTo]);
+  }, [proposals, dateFrom, dateTo, selectedPerson]);
 
   const filteredKPIs = useMemo(() => {
     let result = kpis;
     if (dateFrom) result = result.filter(k => k.execution_start && new Date(k.execution_start) >= dateFrom);
     if (dateTo) result = result.filter(k => k.execution_start && new Date(k.execution_start) <= dateTo);
+    if (selectedPerson !== 'all') {
+      result = result.filter(k => k.team_name === selectedPerson);
+    }
     return result;
-  }, [kpis, dateFrom, dateTo]);
+  }, [kpis, dateFrom, dateTo, selectedPerson]);
+
 
   // ---- CSM metrics ----
   const csmTotal$ = filtered.reduce((s, p) => s + p.budget, 0);
@@ -99,7 +126,7 @@ export default function RolePerformance() {
   const lbAdjustments = filtered.filter(p => p.proposal_adjustments > 0).length;
 
   // ---- Campaign Manager metrics (from team_kpis) ----
-  const cmExecuted$ = filteredKPIs.reduce((s, k) => s + k.output_count, 0);
+  const cmExecuted$ = filteredKPIs.reduce((s, k) => s + k.target_value, 0);
   const cmCampaigns = filteredKPIs.length;
   const cmInfluencers = filteredKPIs.reduce((s, k) => s + k.num_influencers, 0);
   const cmHealthy = filteredKPIs.filter(k => k.progress_pct >= 80).length;
@@ -137,7 +164,7 @@ export default function RolePerformance() {
       if (!map[name]) map[name] = { name, campaigns: 0, influencers: 0, executed: 0 };
       map[name].campaigns++;
       map[name].influencers += k.num_influencers;
-      map[name].executed += k.output_count;
+      map[name].executed += k.target_value;
     });
     return Object.values(map).sort((a, b) => b.campaigns - a.campaigns).slice(0, 10);
   }, [filteredKPIs]);
@@ -186,8 +213,20 @@ export default function RolePerformance() {
               <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setToOpen(false); }} initialFocus className={cn("p-3 pointer-events-auto")} />
             </PopoverContent>
           </Popover>
-          {(dateFrom || dateTo) && (
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Clear</Button>
+          <Select value={selectedPerson} onValueChange={setSelectedPerson}>
+            <SelectTrigger className="w-[160px] text-xs h-9">
+              <UserSearch className="mr-1 h-3 w-3" />
+              <SelectValue placeholder="All people" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All people</SelectItem>
+              {allPeople.map(name => (
+                <SelectItem key={name} value={name}>{name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(dateFrom || dateTo || selectedPerson !== 'all') && (
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => { setDateFrom(undefined); setDateTo(undefined); setSelectedPerson('all'); }}>Clear</Button>
           )}
         </div>
       </div>
