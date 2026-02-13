@@ -17,6 +17,7 @@ export type ProposalAudit = {
   building_proposal_start: string | null;
   pending_approval_start: string | null;
   days_since_pending: number;
+  days_after_approved: number | null;
   risk_score: number;
   ai_insight: string | null;
   action_required: string | null;
@@ -83,6 +84,7 @@ export function useProposalsAudit() {
         building_proposal_start: row.building_proposal_start,
         pending_approval_start: row.pending_approval_start,
         days_since_pending: Number(row.days_since_pending ?? 0),
+        days_after_approved: row.days_after_approved != null ? Number(row.days_after_approved) : null,
         risk_score: Number(row.risk_score ?? 1),
         ai_insight: row.ai_insight,
         action_required: row.action_required,

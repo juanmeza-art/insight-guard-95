@@ -75,9 +75,9 @@ const Proposals = () => {
     const pending = filtered.filter(p => p.status === 'Pending Approval').length;
     const building = filtered.filter(p => ['Building Proposal', 'Adjusting'].includes(p.status ?? '')).length;
 
-    const withDays = filtered.filter(p => p.days_since_pending > 0);
+    const withDays = filtered.filter(p => p.days_after_approved != null && p.days_after_approved > 0);
     const avgCycle = withDays.length > 0
-      ? (withDays.reduce((s, p) => s + p.days_since_pending, 0) / withDays.length).toFixed(1)
+      ? (withDays.reduce((s, p) => s + (p.days_after_approved ?? 0), 0) / withDays.length).toFixed(1)
       : '—';
 
     const approvalRate = (approved + declined) > 0
@@ -184,7 +184,7 @@ const Proposals = () => {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.avgCycle}<span className="text-sm font-normal text-muted-foreground ml-1">days</span></p>
-            <p className="text-xs text-muted-foreground mt-1">Avg. days pending approval</p>
+            <p className="text-xs text-muted-foreground mt-1">Avg. days to close sale</p>
           </CardContent>
         </Card>
 
