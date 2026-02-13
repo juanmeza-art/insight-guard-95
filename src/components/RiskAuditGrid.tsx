@@ -106,9 +106,12 @@ export function RiskAuditGrid({ data }: Props) {
                   </div>
                 </div>
 
-                {/* Budget + AI Insight Button */}
+                {/* Company + Budget + AI Insight Button */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs font-mono text-muted-foreground">${c.target_value.toLocaleString()}</span>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {c.company && <span className="truncate max-w-[120px]">{c.company}</span>}
+                    <span className="font-mono">${c.target_value.toLocaleString()}</span>
+                  </div>
                   <AIInsightButton campaign={c} />
                 </div>
               </CardContent>
