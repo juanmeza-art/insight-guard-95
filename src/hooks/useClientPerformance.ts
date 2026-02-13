@@ -81,9 +81,27 @@ export function useClientPerformance() {
         execution_end: row.execution_end,
         views: Number(row.views ?? 0),
         engagements: Number(row.engagements ?? 0),
-        cpm: Number(row.cpm ?? 0),
-        cpe: Number(row.cpe ?? 0),
-        er_pct: Number(row.er_pct ?? 0),
+        cpm: (() => {
+          const v = Number(row.cpm ?? 0);
+          if (v > 0) return v;
+          const views = Number(row.views ?? 0);
+          const budget = Number(row.target_value ?? 0);
+          return views > 0 ? (budget / views) * 1000 : 0;
+        })(),
+        cpe: (() => {
+          const v = Number(row.cpe ?? 0);
+          if (v > 0) return v;
+          const eng = Number(row.engagements ?? 0);
+          const budget = Number(row.target_value ?? 0);
+          return eng > 0 ? budget / eng : 0;
+        })(),
+        er_pct: (() => {
+          const v = Number(row.er_pct ?? 0);
+          if (v > 0) return v;
+          const views = Number(row.views ?? 0);
+          const eng = Number(row.engagements ?? 0);
+          return views > 0 ? (eng / views) * 100 : 0;
+        })(),
       }));
     },
   });
