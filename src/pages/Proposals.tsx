@@ -231,7 +231,7 @@ const Proposals = () => {
           { key: 'Declined', statuses: ['Declined'] },
         ].map(({ key, statuses }) => {
           const cfg = STATUS_CONFIG[key];
-          const count = proposals.filter(p => statuses.includes(p.status ?? '')).length;
+          const count = filtered.filter(p => statuses.includes(p.status ?? '')).length;
           const Icon = cfg.icon;
           const isActive = statuses.includes(statusFilter);
           return (
