@@ -315,11 +315,10 @@ export default function RolePerformance() {
                   <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-25} textAnchor="end" height={60} />
                   <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
                   <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: '# Campaigns', angle: 90, position: 'insideRight', style: { fontSize: 9, fill: '#9ca3af' } }} />
-                  <Tooltip formatter={(value: number, name: string) => [name === 'executed' ? `$${value.toLocaleString()}` : value.toLocaleString(), name === 'executed' ? '$ Executed' : name === 'campaigns' ? '# Campaigns' : name === 'ugc' ? '# UGC' : '# Influencers']} />
+                  <Tooltip formatter={(value: number, name: string) => [value.toLocaleString(), name === 'campaigns' ? '# Campaigns' : name === 'ugc' ? '# UGC' : '# Influencers']} />
                   <Bar yAxisId="right" dataKey="campaigns" fill="hsl(var(--chart-purple))" radius={[4, 4, 0, 0]} />
                   <Bar yAxisId="left" dataKey="influencers" fill="hsl(var(--chart-green))" radius={[4, 4, 0, 0]} />
                   <Bar yAxisId="left" dataKey="ugc" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Line yAxisId="left" type="monotone" dataKey="executed" stroke="hsl(var(--chart-orange))" strokeWidth={2} dot={{ r: 3 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </CardContent>
