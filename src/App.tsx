@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Proposals from "./pages/Proposals";
 import ClientPerformance from "./pages/ClientPerformance";
 import RolePerformance from "./pages/RolePerformance";
+import TeamPerformance from "./pages/TeamPerformance";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/proposals" element={<Proposals />} />
             <Route path="/client-performance" element={<ClientPerformance />} />
             <Route path="/role-performance" element={<RolePerformance />} />
+            <Route path="/team-performance" element={<TeamPerformance />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
