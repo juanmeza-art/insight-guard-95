@@ -48,14 +48,26 @@ export function useProposalsAudit() {
   return useQuery({
     queryKey: ['proposals-audit'],
     queryFn: async (): Promise<ProposalAudit[]> => {
-      const { data, error } = await supabase
-        .from('proposals_audit')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const PAGE = 1000;
+      let all: any[] = [];
+      let offset = 0;
+      let done = false;
 
-      if (error) throw error;
+      while (!done) {
+        const { data, error } = await supabase
+          .from('proposals_audit')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE - 1);
 
-      return (data ?? []).map((row: any) => ({
+        if (error) throw error;
+        if (!data || data.length === 0) { done = true; break; }
+        all = all.concat(data);
+        if (data.length < PAGE) done = true;
+        else offset += PAGE;
+      }
+
+      return all.map((row: any) => ({
         id: row.id,
         monday_id: row.monday_id,
         campaign_name: row.campaign_name,
