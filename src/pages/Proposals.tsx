@@ -67,13 +67,13 @@ const Proposals = () => {
   }, [proposals, statusFilter, roleFilter, dateFrom, dateTo]);
 
   const stats = useMemo(() => {
-    const total = proposals.length;
-    const approved = proposals.filter(p => p.status === 'Sent to Execution' || p.status === 'Approved').length;
-    const declined = proposals.filter(p => p.status === 'Declined').length;
-    const pending = proposals.filter(p => p.status === 'Pending Approval').length;
-    const building = proposals.filter(p => ['Building Proposal', 'Adjusting'].includes(p.status ?? '')).length;
+    const total = filtered.length;
+    const approved = filtered.filter(p => p.status === 'Sent to Execution' || p.status === 'Approved').length;
+    const declined = filtered.filter(p => p.status === 'Declined').length;
+    const pending = filtered.filter(p => p.status === 'Pending Approval').length;
+    const building = filtered.filter(p => ['Building Proposal', 'Adjusting'].includes(p.status ?? '')).length;
 
-    const withDays = proposals.filter(p => p.days_since_pending > 0);
+    const withDays = filtered.filter(p => p.days_since_pending > 0);
     const avgCycle = withDays.length > 0
       ? (withDays.reduce((s, p) => s + p.days_since_pending, 0) / withDays.length).toFixed(1)
       : '—';
@@ -82,13 +82,13 @@ const Proposals = () => {
       ? ((approved / (approved + declined)) * 100).toFixed(0)
       : '—';
 
-    const totalBudget = proposals.reduce((s, p) => s + p.budget, 0);
+    const totalBudget = filtered.reduce((s, p) => s + p.budget, 0);
 
     const byListBuilder = new Map<string, number>();
     const byCsm = new Map<string, number>();
     const bySeller = new Map<string, number>();
 
-    proposals.forEach(p => {
+    filtered.forEach(p => {
       if (p.list_builder) {
         p.list_builder.split(',').map(n => n.trim()).forEach(n => {
           byListBuilder.set(n, (byListBuilder.get(n) ?? 0) + 1);
@@ -99,7 +99,7 @@ const Proposals = () => {
     });
 
     return { total, approved, declined, pending, building, avgCycle, approvalRate, totalBudget, byListBuilder, byCsm, bySeller };
-  }, [proposals]);
+  }, [filtered]);
 
   const formatCurrency = (v: number) =>
     v >= 1000 ? `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `$${v}`;
