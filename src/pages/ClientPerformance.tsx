@@ -9,10 +9,10 @@ import { format } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useState, useMemo } from 'react';
-import { useTeamKPIs } from '@/hooks/useTeamKPIs';
+import { useClientPerformance } from '@/hooks/useClientPerformance';
 
 const ClientPerformance = () => {
-  const { data: allKPIs = [] } = useTeamKPIs();
+  const { data: allKPIs = [] } = useClientPerformance();
   const companies = [...new Set(allKPIs.map(k => k.company).filter(Boolean))].sort();
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -28,8 +28,8 @@ const ClientPerformance = () => {
   }, [allKPIs, selectedCompany, dateFrom, dateTo]);
 
   const totalInfluencers = filtered.reduce((s, k) => s + k.num_influencers, 0);
-  const totalSent = filtered.reduce((s, k) => s + k.count_sent, 0);
-  const totalCompleted = filtered.reduce((s, k) => s + k.count_completed, 0);
+  const totalViews = filtered.reduce((s, k) => s + k.views, 0);
+  const totalEngagements = filtered.reduce((s, k) => s + k.engagements, 0);
   const totalBudget = filtered.reduce((s, k) => s + k.target_value, 0);
 
   // Historical monthly data – last 6 months only
@@ -126,18 +126,18 @@ const ClientPerformance = () => {
         </Card>
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Sent</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Views</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{totalSent.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{totalViews.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Engagements</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{totalCompleted.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{totalEngagements.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
@@ -195,8 +195,8 @@ const ClientPerformance = () => {
       {selectedCompany !== 'all' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map(kpi => {
-            const cpm = kpi.num_influencers > 0 ? kpi.target_value / kpi.num_influencers * 1000 : 0;
-            const cpe = kpi.count_completed > 0 ? kpi.target_value / kpi.count_completed : 0;
+            const cpmVal = kpi.cpm;
+            const cpeVal = kpi.cpe;
             return (
               <Card key={kpi.id} className="glass-card">
                 <CardHeader className="pb-2">
@@ -206,10 +206,10 @@ const ClientPerformance = () => {
                   <div className="flex justify-between"><span>Team</span><span className="text-foreground">{kpi.team_name}</span></div>
                   <div className="flex justify-between"><span>Total Budget</span><span className="text-foreground">${kpi.target_value.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span>Take Rate</span><span className="text-foreground">{kpi.executed_take_rate_pct}%</span></div>
-                  <div className="flex justify-between"><span>CPM</span><span className="text-foreground">${cpm.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
-                  <div className="flex justify-between"><span>CPE</span><span className="text-foreground">${cpe.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
-                  <div className="flex justify-between"><span>Influencers</span><span className="text-foreground">{kpi.num_influencers}</span></div>
-                  <div className="flex justify-between"><span>Completed</span><span className="text-foreground">{kpi.count_completed}</span></div>
+                  <div className="flex justify-between"><span>CPM</span><span className="text-foreground">${cpmVal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
+                  <div className="flex justify-between"><span>CPE</span><span className="text-foreground">${cpeVal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
+                  <div className="flex justify-between"><span>Views</span><span className="text-foreground">{kpi.views.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Engagements</span><span className="text-foreground">{kpi.engagements.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span>Status</span><span className="text-foreground capitalize">{kpi.sal_status}</span></div>
                   {kpi.execution_start && <div className="flex justify-between"><span>Period</span><span className="text-foreground">{kpi.execution_start} → {kpi.execution_end}</span></div>}
                 </CardContent>
