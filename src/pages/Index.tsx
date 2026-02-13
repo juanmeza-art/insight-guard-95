@@ -12,20 +12,20 @@ import { motion } from 'framer-motion';
 
 const Index = () => {
   const [team, setTeam] = useState('all');
-  const [salStatus, setSalStatus] = useState('all');
+  const [brand, setBrand] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { data: allCampaigns = [], isLoading } = useTeamKPIs();
 
   const teams = useMemo(() => [...new Set(allCampaigns.map(c => c.team_name).filter(Boolean))].sort(), [allCampaigns]);
-  const statuses = useMemo(() => [...new Set(allCampaigns.map(c => c.sal_status).filter(Boolean))].sort(), [allCampaigns]);
+  const brands = useMemo(() => [...new Set(allCampaigns.map(c => c.company).filter(Boolean))].sort(), [allCampaigns]);
 
   const filtered = useMemo(() => {
     return allCampaigns.filter(c => {
       if (team !== 'all' && c.team_name !== team) return false;
-      if (salStatus !== 'all' && c.sal_status !== salStatus) return false;
+      if (brand !== 'all' && c.company !== brand) return false;
       return true;
     });
-  }, [team, salStatus, allCampaigns]);
+  }, [team, brand, allCampaigns]);
 
   if (isLoading) {
     return (
@@ -55,14 +55,14 @@ const Index = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={salStatus} onValueChange={setSalStatus}>
-              <SelectTrigger className="w-[140px] glass-card text-xs">
-                <SelectValue placeholder="All Statuses" />
+            <Select value={brand} onValueChange={setBrand}>
+              <SelectTrigger className="w-[200px] glass-card text-xs">
+                <SelectValue placeholder="All Brands" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                {statuses.map(s => (
-                  <SelectItem key={s} value={s!} className="text-xs">{s}</SelectItem>
+                <SelectItem value="all">All Brands</SelectItem>
+                {brands.map(b => (
+                  <SelectItem key={b} value={b!} className="text-xs">{b}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
