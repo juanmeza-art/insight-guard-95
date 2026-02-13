@@ -120,23 +120,29 @@ export default function TeamPerformance() {
     return counts.map((c, i) => ({ day: i + 1, count: c }));
   }, [proposals, dailyMonth]);
 
-  // ── Chart 4: Campaigns & influencers by quarter ──
+  // ── Chart 4: Campaigns, Influencers & UGC (current quarter only) ──
   const quarterlyData = useMemo(() => {
     const validStatuses = ['Ongoing', 'Recently Completed', 'Completed'];
-    const qMap: Record<string, { campaigns: Set<string>; influencers: number }> = {};
+    const now = new Date();
+    const currentQ = Math.floor(now.getMonth() / 3);
+    const currentYear = now.getFullYear();
+
+    const campaigns = new Set<string>();
+    let influencers = 0;
+    let ugc = 0;
 
     for (const k of teamKpis) {
       if (!k.execution_start || !validStatuses.includes(k.sal_status || '')) continue;
       const d = parseISO(k.execution_start);
-      const q = `Q${Math.floor(d.getMonth() / 3) + 1} '${String(d.getFullYear()).slice(2)}`;
-      if (!qMap[q]) qMap[q] = { campaigns: new Set(), influencers: 0 };
-      if (k.campaign_name) qMap[q].campaigns.add(k.campaign_name);
-      qMap[q].influencers += k.num_influencers;
+      if (d.getFullYear() === currentYear && Math.floor(d.getMonth() / 3) === currentQ) {
+        if (k.campaign_name) campaigns.add(k.campaign_name);
+        influencers += k.num_influencers;
+        ugc += k.num_ugc;
+      }
     }
 
-    return Object.entries(qMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([q, v]) => ({ quarter: q, campaigns: v.campaigns.size, influencers: v.influencers }));
+    const qLabel = `Q${currentQ + 1} '${String(currentYear).slice(2)}`;
+    return [{ quarter: qLabel, campaigns: campaigns.size, influencers, ugc }];
   }, [teamKpis]);
 
   // ── AI Insight handler ──
@@ -331,11 +337,11 @@ export default function TeamPerformance() {
           </CardContent>
         </Card>
 
-        {/* Chart 4: Campaigns & Influencers by Quarter */}
+        {/* Chart 4: Campaigns, Influencers & UGC (current Q) */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Campaigns & Influencers by Quarter</CardTitle>
-            <CardDescription>Ongoing + Completed statuses</CardDescription>
+            <CardTitle className="text-sm">Campaigns, Influencers & UGC</CardTitle>
+            <CardDescription>Current quarter — Ongoing + Completed</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -345,11 +351,13 @@ export default function TeamPerformance() {
                 <BarChart data={quarterlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="quarter" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-                  <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <YAxis yAxisId="left" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} className="fill-muted-foreground" label={{ value: '# Campaigns', angle: 90, position: 'insideRight', style: { fontSize: 10, fill: '#9ca3af' } }} />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="campaigns" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="influencers" fill="#f97316" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="influencers" fill="#f97316" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="ugc" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="right" dataKey="campaigns" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
