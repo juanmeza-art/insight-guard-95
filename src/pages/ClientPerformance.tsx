@@ -16,8 +16,8 @@ const ClientPerformance = () => {
   const { data: allKPIs = [] } = useClientPerformance();
   const companies = [...new Set(allKPIs.map(k => k.company).filter(Boolean))].sort();
   const [selectedCompany, setSelectedCompany] = useState('all');
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [dateTo, setDateTo] = useState<Date | undefined>(() => new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
   const [fromOpen, setFromOpen] = useState(false);
   const [toOpen, setToOpen] = useState(false);
 
