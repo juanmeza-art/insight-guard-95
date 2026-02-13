@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format, subMonths, startOfMonth, endOfMonth, parseISO, getDaysInMonth } from 'date-fns';
 
 const QUARTERLY_GOAL = 1_901_116;
@@ -144,6 +145,55 @@ export default function TeamPerformance() {
     const qLabel = `Q${currentQ + 1} '${String(currentYear).slice(2)}`;
     return [{ quarter: qLabel, campaigns: campaigns.size, influencers, ugc }];
   }, [teamKpis]);
+
+  // ── Monthly KPI Summary Table (last 6 months) ──
+  const monthlyKpiTable = useMemo(() => {
+    const now = new Date();
+    const months: { key: string; label: string; start: Date; end: Date }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = subMonths(now, i);
+      months.push({
+        key: format(d, 'yyyy-MM'),
+        label: format(d, 'MMM'),
+        start: startOfMonth(d),
+        end: endOfMonth(d),
+      });
+    }
+
+    return months.map((m) => {
+      // Filter proposals for this month
+      const monthProposals = proposals.filter(p => {
+        const dateStr = p.building_proposal_start || p.created_at;
+        if (!dateStr) return false;
+        const d = parseISO(dateStr);
+        return format(d, 'yyyy-MM') === m.key;
+      });
+
+      // Sales Cycle: avg days_after_approved where > 0
+      const validDays = monthProposals.filter(p => p.days_after_approved != null && p.days_after_approved > 0);
+      const salesCycle = validDays.length > 0
+        ? (validDays.reduce((s, p) => s + (p.days_after_approved ?? 0), 0) / validDays.length).toFixed(1)
+        : '—';
+
+      // Approval Rate
+      const approved = monthProposals.filter(p => p.status === 'Approved' || p.status === 'Sent to Execution').length;
+      const declined = monthProposals.filter(p => p.status === 'Declined').length;
+      const approvalRate = (approved + declined) > 0
+        ? `${((approved / (approved + declined)) * 100).toFixed(0)}%`
+        : '—';
+
+      // TPV Goal Attainment: sum target_value from teamKpis for this month
+      let tpv = 0;
+      for (const k of teamKpis) {
+        if (!k.execution_start) continue;
+        const d = parseISO(k.execution_start);
+        if (format(d, 'yyyy-MM') === m.key) tpv += k.target_value;
+      }
+      const goalPct = MONTHLY_GOAL > 0 ? `${((tpv / MONTHLY_GOAL) * 100).toFixed(0)}%` : '—';
+
+      return { label: m.label, salesCycle, approvalRate, goalPct };
+    });
+  }, [proposals, teamKpis]);
 
   // ── AI Insight handler ──
   const generateInsight = async () => {
@@ -364,6 +414,48 @@ export default function TeamPerformance() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Monthly KPI Summary Table ── */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Monthly KPI Summary</CardTitle>
+          <CardDescription>Last 6 months</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-semibold w-[160px]">Metric</TableHead>
+                  {monthlyKpiTable.map((m) => (
+                    <TableHead key={m.label} className="text-xs text-center">{m.label}</TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="text-xs font-medium">Sales Cycle (days)</TableCell>
+                  {monthlyKpiTable.map((m) => (
+                    <TableCell key={m.label} className="text-xs text-center font-mono">{m.salesCycle}</TableCell>
+                  ))}
+                </TableRow>
+                <TableRow>
+                  <TableCell className="text-xs font-medium">Approval Rate</TableCell>
+                  {monthlyKpiTable.map((m) => (
+                    <TableCell key={m.label} className="text-xs text-center font-mono">{m.approvalRate}</TableCell>
+                  ))}
+                </TableRow>
+                <TableRow>
+                  <TableCell className="text-xs font-medium">TPV Goal Attainment</TableCell>
+                  {monthlyKpiTable.map((m) => (
+                    <TableCell key={m.label} className="text-xs text-center font-mono">{m.goalPct}</TableCell>
+                  ))}
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
